@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre & Contato | RR Elétrica</title>
+<meta name="description" content="Conheça a RR Elétrica e solicite seu orçamento pelo formulário ou direto pelo WhatsApp.">
+
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="contato">
+
+<div id="siteHeader"></div>
+
+<!-- ===================== SOBRE NÓS ===================== -->
+<section class="about-block">
+  <div class="wrap">
+    <div class="about-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> SOBRE A RR ELÉTRICA</span>
+        <h2>Um fornecedor só, do projeto à energização</h2>
+        <p>
+          A RR Elétrica atende clientes industriais, comerciais e residenciais na região de Campinas,
+          com um jeito direto de trabalhar: você fala com quem executa o serviço, recebe o escopo antes
+          de aprovar qualquer coisa, e acompanha a obra do início ao fim.
+        </p>
+        <p>
+          Além das instalações elétricas tradicionais, desenvolvemos a linha própria de painéis
+          <b>Raitec</b>, voltada especificamente para o comando de bombas, aquecimento e iluminação
+          de piscinas — um nicho técnico que exige atenção especial à umidade e à segurança elétrica.
+        </p>
+      </div>
+      <div class="about-stats">
+        <div class="about-stat">
+          <b>3</b>
+          <span>Frentes de atuação: industrial, comercial e residencial</span>
+        </div>
+        <div class="about-stat">
+          <b>1</b>
+          <span>Linha própria de painéis para piscinas — Raitec</span>
+        </div>
+        <div class="about-stat">
+          <b>PJ</b>
+          <span>Empresa formalizada, CNPJ 24.727.143/0001-68</span>
+        </div>
+        <div class="about-stat">
+          <b>Direto</b>
+          <span>Atendimento sem intermediários, pelo WhatsApp</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard"></div>
+
+<!-- ===================== CONTATO / FORMSPREE ===================== -->
+<section id="contato">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> CONTATO</span>
+      <h2>Solicite seu orçamento</h2>
+      <p>Preencha o formulário ou fale direto pelo WhatsApp — o que for mais rápido pra você.</p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="row">
+          <div class="ic">📱</div>
+          <div>
+            <b>WhatsApp</b>
+            <span>(19) 98160-5606</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="ic">🏢</div>
+          <div>
+            <b>CNPJ</b>
+            <span>24.727.143/0001-68</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="ic">⚡</div>
+          <div>
+            <b>Área de atuação</b>
+            <span>Instalações industriais, comerciais e residenciais</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="ic">🏊</div>
+          <div>
+            <b>Especialidade</b>
+            <span>Painéis Raitec para piscinas</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="ic">🔒</div>
+          <div>
+            <b>Também fazemos</b>
+            <span>Segurança eletrônica (câmeras, alarmes, redes)</span>
+          </div>
+        </div>
+        <div class="row" style="border-bottom:none; margin-top:8px;">
+          <a class="btn btn-whats" style="width:100%; justify-content:center;" href="https://wa.me/5519981605606?text=Ol%C3%A1%2C%20vim%20pelo%20site%20e%20quero%20um%20or%C3%A7amento" target="_blank" rel="noopener">
+            Chamar agora no WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <form class="quote-form" action="https://formspree.io/f/SEU_ID_FORMSPREE" method="POST" id="quoteForm">
+        <div class="form-row-2">
+          <div class="field">
+            <label for="name">Nome</label>
+            <input type="text" id="name" name="nome" required placeholder="Seu nome">
+          </div>
+          <div class="field">
+            <label for="phone">WhatsApp</label>
+            <input type="tel" id="phone" name="telefone" required placeholder="(19) 90000-0000">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="type">Tipo de imóvel / instalação</label>
+          <select id="type" name="tipo_instalacao">
+            <option>Industrial</option>
+            <option>Comercial</option>
+            <option>Residencial</option>
+            <option>Elétrica de piscina (Raitec)</option>
+            <option>Segurança eletrônica</option>
+            <option>Outro</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="message">Descreva o serviço</label>
+          <textarea id="message" name="mensagem" required placeholder="Conte um pouco sobre o que você precisa..."></textarea>
+        </div>
+
+        <input type="hidden" name="_subject" value="Novo orçamento — Site RR Elétrica">
+
+        <button class="btn btn-primary" type="submit">Enviar solicitação</button>
+        <p class="form-status" id="formStatus"></p>
+        <p class="form-note">Ao enviar, você concorda em ser contatado pela RR Elétrica pelo WhatsApp ou telefone informado.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="siteFooter"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

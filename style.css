@@ -159,9 +159,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .nav-toggle{ display:none; }
 
 @media (max-width:1180px){
-  .nav-links{ gap:16px; }
-  .nav-links a{ font-size:.8rem; }
-  .btn{ padding:11px 16px; font-size:.8rem; }
+  .nav-links{ gap:14px; }
+  .nav-links a{ font-size:.78rem; }
+  .btn{ padding:10px 14px; font-size:.78rem; }
+}
+@media (max-width:1020px){
+  .header-cta .btn-ghost{ display:none; }
 }
 
 /* -------------------------------------------------------
@@ -705,3 +708,221 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
   .process{ border-radius:14px; }
   .cta-band{ padding:32px 24px; }
 }
+
+/* =========================================================
+   V2 — Site multi-página
+   ========================================================= */
+
+/* Hero compacto (sem painel QGBT), reutilizado em todas as páginas */
+.hero.hero-compact{
+  padding:56px 0 48px;
+}
+.hero-copy-center{
+  max-width:760px;
+  margin:0 auto;
+  text-align:center;
+}
+.hero-compact .lead{ margin-left:auto; margin-right:auto; }
+.hero-compact .eyebrow{ margin-left:auto; margin-right:auto; }
+.hero-compact .hero-actions{ justify-content:center; }
+.hero-compact .hero-meta{ justify-content:center; }
+.hero-compact h1{ font-size:clamp(1.9rem, 3.6vw, 2.9rem); }
+
+/* Nav active state */
+.nav-links a.active{ color:var(--text); border-color:var(--orange-1); }
+
+/* ---------------------------------------------------------
+   Cards de serviço com foto (usado em Início, Industrial,
+   Residencial e Segurança Eletrônica)
+   --------------------------------------------------------- */
+.featured-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  gap:24px;
+}
+.feature-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.feature-photo{
+  aspect-ratio:16/10;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.feature-photo img{ width:100%; height:100%; object-fit:cover; }
+.feature-photo svg{ width:100%; height:100%; display:block; }
+.feature-body{ padding:22px 22px 26px; }
+.feature-body h3{ font-size:1.05rem; margin-bottom:8px; color:var(--text); }
+.feature-body p{ color:var(--text-dim); font-size:.92rem; margin:0; }
+.feature-tag{
+  font-family:var(--font-mono);
+  font-size:.68rem;
+  letter-spacing:.06em;
+  color:var(--orange-1);
+  display:block;
+  margin-bottom:8px;
+}
+
+/* Variantes de gradiente/ícone para os placeholders de foto */
+.ph-industrial{ background:linear-gradient(155deg,#1c3a52,#0f2130); }
+.ph-comercial{ background:linear-gradient(155deg,#233245,#131c26); }
+.ph-residencial{ background:linear-gradient(155deg,#2a2440,#161225); }
+.ph-iluminacao{ background:linear-gradient(155deg,#3a2c14,#1f1608); }
+.ph-quadros{ background:linear-gradient(155deg,#233245,#101820); }
+.ph-piscina{ background:linear-gradient(155deg,#123049,#0a1c2c); }
+.ph-seguranca{ background:linear-gradient(155deg,#241c30,#120e19); }
+.ph-camera{ background:linear-gradient(155deg,#1c2b30,#0d1518); }
+.ph-alarme{ background:linear-gradient(155deg,#33241a,#190f0a); }
+.ph-rede{ background:linear-gradient(155deg,#16283a,#0a141e); }
+
+/* ---------------------------------------------------------
+   Página de conteúdo genérica (Industrial/Residencial/Segurança)
+   --------------------------------------------------------- */
+.page-intro{
+  padding:56px 0 8px;
+}
+.page-intro .section-head{ margin-bottom:0; max-width:760px; }
+
+/* ---------------------------------------------------------
+   Trust strip reposicionada (usada só na home, antes do rodapé)
+   --------------------------------------------------------- */
+.trustbar.trustbar-bottom{
+  border-bottom:none;
+  border-top:1px solid var(--line);
+}
+
+/* ---------------------------------------------------------
+   Página Raitec — um painel por linha
+   --------------------------------------------------------- */
+.raitec-intro{ padding:56px 0 24px; }
+.raitec-list{ display:flex; flex-direction:column; gap:56px; padding-bottom:40px; }
+.raitec-panel-row{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  background:var(--panel);
+}
+.raitec-photo{
+  position:relative;
+  aspect-ratio:21/8;
+  overflow:hidden;
+  cursor:zoom-in;
+  border-bottom:1px solid var(--line);
+}
+.raitec-photo svg{ width:100%; height:100%; display:block; }
+.raitec-photo .zoom-hint{
+  position:absolute; right:16px; bottom:16px;
+  background:rgba(18,22,27,.75);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--font-mono);
+  font-size:.72rem;
+  letter-spacing:.04em;
+  padding:8px 12px;
+  border-radius:100px;
+  display:flex; align-items:center; gap:6px;
+  backdrop-filter:blur(4px);
+}
+.raitec-body{ padding:30px 34px 8px; }
+.raitec-body .badge{
+  font-family:var(--font-mono);
+  font-size:.72rem;
+  letter-spacing:.06em;
+  color:var(--blue);
+  border:1px solid rgba(46,134,224,.4);
+  background:rgba(46,134,224,.1);
+  padding:6px 12px;
+  border-radius:100px;
+  display:inline-block;
+  margin-bottom:14px;
+}
+.raitec-body h3{ font-size:1.4rem; margin-bottom:12px; color:var(--text); }
+.raitec-body p{ color:var(--text-dim); font-size:.96rem; max-width:70ch; }
+
+.spec-table-wrap{ padding:8px 34px 30px; overflow-x:auto; }
+.spec-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.9rem;
+}
+.spec-table tr{ border-bottom:1px solid var(--line); }
+.spec-table tr:last-child{ border-bottom:none; }
+.spec-table td{ padding:12px 14px; color:var(--text-dim); }
+.spec-table td:first-child{
+  font-family:var(--font-mono);
+  font-size:.76rem;
+  letter-spacing:.04em;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  width:220px;
+  white-space:nowrap;
+}
+.spec-table td:last-child{ color:var(--text); }
+
+.raitec-note{
+  background:rgba(255,198,41,.08);
+  border:1px solid rgba(255,198,41,.3);
+  border-radius:12px;
+  padding:18px 22px;
+  color:var(--text-dim);
+  font-size:.88rem;
+  margin-bottom:40px;
+}
+.raitec-note b{ color:var(--yellow); }
+
+@media (max-width:700px){
+  .raitec-body{ padding:24px 20px 4px; }
+  .spec-table-wrap{ padding:4px 20px 24px; }
+  .spec-table td:first-child{ width:140px; }
+}
+
+/* ---------------------------------------------------------
+   Lightbox (zoom de imagem)
+   --------------------------------------------------------- */
+.lightbox-overlay{
+  position:fixed; inset:0; z-index:200;
+  background:rgba(10,12,15,.92);
+  display:none;
+  align-items:center; justify-content:center;
+  padding:40px;
+}
+.lightbox-overlay.open{ display:flex; }
+.lightbox-content{
+  max-width:min(1100px, 92vw);
+  max-height:88vh;
+  width:100%;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+}
+.lightbox-content svg{ width:100%; height:auto; display:block; }
+.lightbox-close{
+  position:fixed; top:24px; right:28px;
+  width:44px; height:44px; border-radius:50%;
+  background:var(--panel-2); border:1px solid var(--line);
+  color:var(--text); font-size:1.3rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+
+/* ---------------------------------------------------------
+   Sobre nós (página Sobre & Contato)
+   --------------------------------------------------------- */
+.about-block{ padding:56px 0 8px; }
+.about-grid{
+  display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center;
+}
+.about-grid p{ color:var(--text-dim); font-size:1rem; margin-bottom:16px; max-width:56ch; }
+.about-stats{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.about-stat{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:22px;
+}
+.about-stat b{ display:block; font-family:var(--font-display); font-size:1.5rem; color:var(--orange-1); }
+.about-stat span{ font-size:.82rem; color:var(--text-dim); }
+@media (max-width:800px){ .about-grid{ grid-template-columns:1fr; } }
