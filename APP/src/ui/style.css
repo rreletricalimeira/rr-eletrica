@@ -1,0 +1,72 @@
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --accent: #3b82f6;
+  --muted: #94a3b8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 16px;
+}
+
+h1 { font-size: 1.3rem; margin-bottom: 4px; }
+.subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card h2 { font-size: 1rem; margin-top: 0; }
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: var(--text);
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+button.secondary { background: #334155; }
+
+#status {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+#ultimo-backup {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+ul { list-style: none; padding: 0; margin: 0; }
+li {
+  padding: 8px 0;
+  border-bottom: 1px solid #334155;
+  font-size: 0.9rem;
+}
