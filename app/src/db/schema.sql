@@ -3,6 +3,12 @@
 -- Apenas os campos marcados como obrigatórios têm NOT NULL.
 -- ============================================================
 
+CREATE TABLE IF NOT EXISTS colaboradores (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome       TEXT NOT NULL,
+  telefone   TEXT
+);
+
 CREATE TABLE IF NOT EXISTS clientes (
   id                   INTEGER PRIMARY KEY AUTOINCREMENT,
   nome                 TEXT NOT NULL,
@@ -26,7 +32,8 @@ CREATE TABLE IF NOT EXISTS clientes (
   sexo                 TEXT,
   data_nascimento      TEXT,
   data_cadastro        TEXT DEFAULT (datetime('now')),
-  observacao           TEXT
+  observacao           TEXT,
+  colaborador_id       INTEGER REFERENCES colaboradores(id)
 );
 
 CREATE TABLE IF NOT EXISTS fornecedores (

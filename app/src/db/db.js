@@ -52,8 +52,19 @@ export async function initDb() {
   const schemaSql = await schemaResp.text();
   db.run(schemaSql);
 
+  await migrar();
   await persist();
   return db;
+}
+
+// Ajustes em bancos já existentes (criados antes de uma mudança de schema).
+// CREATE TABLE IF NOT EXISTS não adiciona colunas novas a tabelas que já
+// existem, então checamos e adicionamos manualmente quando necessário.
+async function migrar() {
+  const colunas = all("PRAGMA table_info(clientes)").map((c) => c.name);
+  if (!colunas.includes('colaborador_id')) {
+    db.run('ALTER TABLE clientes ADD COLUMN colaborador_id INTEGER REFERENCES colaboradores(id)');
+  }
 }
 
 export async function persist() {
