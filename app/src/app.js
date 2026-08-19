@@ -9,6 +9,7 @@ import { renderFornecedores } from './pages/fornecedores.js';
 import { renderProdutos } from './pages/produtos.js';
 import { renderCategorias } from './pages/categorias.js';
 import { renderUnidades } from './pages/unidades.js';
+import { renderColaboradores } from './pages/colaboradores.js';
 
 const appEl = document.getElementById('app');
 
@@ -39,6 +40,7 @@ async function iniciarApp() {
         <button data-tab="produtos">Produtos</button>
         <button data-tab="categorias">Categorias</button>
         <button data-tab="unidades">Unidades</button>
+        <button data-tab="colaboradores">Colaboradores</button>
         <button data-tab="backup">Backup</button>
       </nav>
       <main id="conteudo"></main>
@@ -60,6 +62,7 @@ async function iniciarApp() {
     produtos: renderProdutos,
     categorias: renderCategorias,
     unidades: renderUnidades,
+    colaboradores: renderColaboradores,
     backup: renderBackupPage,
   };
 
