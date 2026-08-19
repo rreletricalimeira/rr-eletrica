@@ -124,6 +124,14 @@ export function renderClientes(container) {
         <label>Observação</label>
         <textarea id="f-obs">${val(cliente.observacao)}</textarea>
 
+        <label>Colaborador (quem indicou)</label>
+        <select id="f-colaborador">
+          <option value="">Selecione</option>
+          ${all('SELECT id, nome FROM colaboradores ORDER BY nome').map((c) =>
+            `<option value="${c.id}" ${cliente.colaborador_id === c.id ? 'selected' : ''}>${c.nome}</option>`
+          ).join('')}
+        </select>
+
         <button id="btn-salvar-cliente">Salvar</button>
         <button id="btn-cancelar-cliente" class="secondary">Cancelar</button>
         ${id ? '<button id="btn-excluir-cliente" class="danger">Excluir</button>' : ''}
@@ -178,12 +186,13 @@ export function renderClientes(container) {
         sexo: formWrap.querySelector('#f-sexo').value,
         data_nascimento: formWrap.querySelector('#f-nascimento').value,
         observacao: formWrap.querySelector('#f-obs').value.trim(),
+        colaborador_id: numOuNull(formWrap.querySelector('#f-colaborador').value),
       };
 
       if (id) {
         run(`UPDATE clientes SET nome=?, tipo_cliente=?, apelido=?, cep=?, endereco=?, bairro=?, cidade=?, uf=?,
              fone1=?, celular1=?, celular2=?, email=?, cpf=?, rg=?, cnpj=?, inscricao_estadual=?, inscricao_municipal=?,
-             situacao_cadastro=?, sexo=?, data_nascimento=?, observacao=? WHERE id=?`,
+             situacao_cadastro=?, sexo=?, data_nascimento=?, observacao=?, colaborador_id=? WHERE id=?`,
           [...Object.values(dados), id]);
       } else {
         const cols = Object.keys(dados).join(', ');
@@ -213,6 +222,10 @@ export function renderClientes(container) {
 
 function val(v) {
   return v === undefined || v === null ? '' : String(v).replace(/"/g, '&quot;');
+}
+
+function numOuNull(v) {
+  return v === '' || v === undefined || v === null ? null : Number(v);
 }
 
 function escapeHtml(s) {
