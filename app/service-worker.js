@@ -3,7 +3,7 @@
 // IMPORTANTE: o número da versão do cache muda a cada atualização de
 // código para forçar o navegador a buscar os arquivos novos.
 
-const CACHE_NAME = 'rr-eletrica-v2';
+const CACHE_NAME = 'rr-eletrica-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ const CORE_ASSETS = [
   './src/pages/produtos.js',
   './src/pages/categorias.js',
   './src/pages/unidades.js',
+  './src/pages/colaboradores.js',
   'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
 ];
