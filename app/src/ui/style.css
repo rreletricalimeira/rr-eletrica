@@ -143,6 +143,12 @@ button.danger { background: var(--danger); }
   background: var(--bg);
   color: var(--text);
   font-size: 0.95rem;
+  text-align: left;
+}
+/* Navegadores alinham <input type="number"> à direita por padrão —
+   forçamos à esquerda para bater com os demais campos do formulário */
+.form-card input[type="number"] {
+  text-align: left;
 }
 .form-card textarea { min-height: 70px; resize: vertical; }
 .linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text); }
@@ -151,6 +157,7 @@ button.danger { background: var(--danger); }
 .linha-dupla { display: flex; gap: 10px; }
 .linha-dupla > div { flex: 1; }
 .campo-uf { max-width: 80px; }
+.campo-uf input { max-width: 80px; }
 
 .foto-preview-img {
   max-width: 120px;
@@ -159,21 +166,32 @@ button.danger { background: var(--danger); }
   display: block;
 }
 
+.linha-foto-botoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.linha-foto-botoes input[type="file"] { flex: 1; min-width: 160px; }
+.linha-foto-botoes button { margin-bottom: 0; white-space: nowrap; }
+
 /* ---------- Desktop: formulário em grade multi-coluna, como ERP ---------- */
 @media (min-width: 720px) {
   .form-card {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     column-gap: 16px;
+    align-items: start;
   }
   .form-card h3,
   .form-card #foto-preview,
   .form-card textarea,
   .form-card button,
-  .form-card #form-erro {
+  .form-card #form-erro,
+  .form-card .linha-checkbox,
+  .form-card .linha-foto-botoes {
     grid-column: 1 / -1;
   }
-  .form-card .linha-dupla { grid-column: span 1; display: contents; }
 
   .lista li { padding: 12px 8px; }
   .lista li:hover { background: var(--card-2); border-radius: 8px; }
