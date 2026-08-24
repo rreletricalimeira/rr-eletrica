@@ -72,10 +72,11 @@ export function renderClientes(container) {
         <label>Bairro</label>
         <input id="f-bairro" value="${val(cliente.bairro)}" />
 
-        <div class="linha-dupla">
-          <div><label>Cidade</label><input id="f-cidade" value="${val(cliente.cidade)}" /></div>
-          <div class="campo-uf"><label>UF</label><input id="f-uf" value="${val(cliente.uf)}" maxlength="2" /></div>
-        </div>
+        <label>Cidade</label>
+        <input id="f-cidade" value="${val(cliente.cidade)}" />
+
+        <label>UF</label>
+        <input id="f-uf" value="${val(cliente.uf)}" maxlength="2" />
 
         <label>Fone 1</label>
         <input id="f-fone1" value="${val(cliente.fone1)}" placeholder="(99) 9999-9999" />
@@ -121,9 +122,6 @@ export function renderClientes(container) {
         <label>Data de Nascimento</label>
         <input id="f-nascimento" type="date" value="${val(cliente.data_nascimento)}" />
 
-        <label>Observação</label>
-        <textarea id="f-obs">${val(cliente.observacao)}</textarea>
-
         <label>Colaborador (quem indicou)</label>
         <select id="f-colaborador">
           <option value="">Selecione</option>
@@ -131,6 +129,9 @@ export function renderClientes(container) {
             `<option value="${c.id}" ${cliente.colaborador_id === c.id ? 'selected' : ''}>${c.nome}</option>`
           ).join('')}
         </select>
+
+        <label>Observação</label>
+        <textarea id="f-obs">${val(cliente.observacao)}</textarea>
 
         <button id="btn-salvar-cliente">Salvar</button>
         <button id="btn-cancelar-cliente" class="secondary">Cancelar</button>

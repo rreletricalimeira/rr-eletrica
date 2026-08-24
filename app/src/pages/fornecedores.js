@@ -65,10 +65,11 @@ export function renderFornecedores(container) {
         <label>Bairro</label>
         <input id="f-bairro" value="${val(f.bairro)}" />
 
-        <div class="linha-dupla">
-          <div><label>Cidade</label><input id="f-cidade" value="${val(f.cidade)}" /></div>
-          <div class="campo-uf"><label>UF</label><input id="f-uf" value="${val(f.uf)}" maxlength="2" /></div>
-        </div>
+        <label>Cidade</label>
+        <input id="f-cidade" value="${val(f.cidade)}" />
+
+        <label>UF</label>
+        <input id="f-uf" value="${val(f.uf)}" maxlength="2" />
 
         <label>Fone 1</label>
         <input id="f-fone1" value="${val(f.fone1)}" placeholder="(99) 9999-9999" />

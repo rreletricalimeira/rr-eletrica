@@ -100,7 +100,11 @@ export function renderProdutos(container) {
         </select>
 
         <label>Foto do produto (opcional)</label>
-        <input id="f-foto" type="file" accept="image/*" />
+        <div class="linha-foto-botoes">
+          <input id="f-foto" type="file" accept="image/*" />
+          <input id="f-foto-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+          <button type="button" id="btn-tirar-foto" class="secondary">📷 Tirar foto</button>
+        </div>
         <div id="foto-preview">${p.foto_base64 ? `<img src="${p.foto_base64}" class="foto-preview-img" />` : ''}</div>
 
         <label class="linha-checkbox"><input id="f-descontinuado" type="checkbox" ${p.descontinuado ? 'checked' : ''} /> Descontinuado</label>
@@ -114,11 +118,16 @@ export function renderProdutos(container) {
 
     let fotoBase64Atual = p.foto_base64 || null;
 
-    formWrap.querySelector('#f-foto').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
+    async function processarFoto(file) {
       if (!file) return;
       fotoBase64Atual = await comprimirFoto(file, 400, 0.5);
       formWrap.querySelector('#foto-preview').innerHTML = `<img src="${fotoBase64Atual}" class="foto-preview-img" />`;
+    }
+
+    formWrap.querySelector('#f-foto').addEventListener('change', (e) => processarFoto(e.target.files[0]));
+    formWrap.querySelector('#f-foto-camera').addEventListener('change', (e) => processarFoto(e.target.files[0]));
+    formWrap.querySelector('#btn-tirar-foto').addEventListener('click', () => {
+      formWrap.querySelector('#f-foto-camera').click();
     });
 
     // Cálculo automático: se custo + margem preenchidos, sugere valor de venda
