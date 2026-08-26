@@ -3,7 +3,7 @@
 // IMPORTANTE: o número da versão do cache muda a cada atualização de
 // código para forçar o navegador a buscar os arquivos novos.
 
-const CACHE_NAME = 'rr-eletrica-v3';
+const CACHE_NAME = 'rr-eletrica-v5';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -23,8 +23,16 @@ const CORE_ASSETS = [
   './src/pages/categorias.js',
   './src/pages/unidades.js',
   './src/pages/colaboradores.js',
+  './src/pages/os.js',
+  './src/pages/financeiro.js',
+  './src/pages/taxas_cartao.js',
+  './src/pages/contas_caixa.js',
+  './src/pages/veiculos.js',
+  './src/pages/manutencao_veiculo.js',
   'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
 ];
 
 self.addEventListener('install', (event) => {
