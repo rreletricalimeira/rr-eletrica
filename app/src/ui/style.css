@@ -83,6 +83,7 @@ nav.tabs button {
   color: var(--muted);
   font-size: 0.85rem;
   border-bottom: 2px solid transparent;
+  margin: 0;
 }
 nav.tabs button.ativo {
   color: var(--text);
@@ -107,6 +108,7 @@ button {
   color: white;
   font-size: 0.95rem;
   cursor: pointer;
+  margin-top: 6px;
   margin-bottom: 8px;
 }
 button.secondary { background: var(--card-2); }
