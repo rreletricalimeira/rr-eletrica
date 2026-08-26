@@ -5,7 +5,7 @@ export function renderFinanceiro(container) {
     <div class="page">
       <h2>Financeiro</h2>
 
-      <div class="card">
+      <div class="card filtros-financeiro">
         <h3>Filtros</h3>
         <div class="linha-dupla">
           <div><label>De</label><input id="filtro-de" type="date" /></div>

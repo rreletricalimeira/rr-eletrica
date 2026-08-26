@@ -49,15 +49,15 @@ export function renderOS(container) {
           ).join('')}
         </select>
 
-        <label>Descrição do serviço</label>
-        <textarea id="f-descricao">${val(os.descricao)}</textarea>
-
         <label>Status de andamento</label>
         <select id="f-status-andamento">
           ${['Aberta', 'Em andamento', 'Concluída', 'Cancelada'].map((s) =>
             `<option ${os.status_andamento === s ? 'selected' : ''}>${s}</option>`
           ).join('')}
         </select>
+
+        <label>Descrição do serviço</label>
+        <textarea id="f-descricao">${val(os.descricao)}</textarea>
 
         <label>Status de pagamento</label>
         <select id="f-status-pagamento">

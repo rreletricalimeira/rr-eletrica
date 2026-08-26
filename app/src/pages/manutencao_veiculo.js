@@ -24,7 +24,9 @@ export function renderManutencaoVeiculo(container) {
 
   function renderConteudo(veiculoId) {
     conteudoEl.innerHTML = `
-      <button id="btn-novo-lancamento">+ Novo lançamento</button>
+      <div style="margin-top: 16px;">
+        <button id="btn-novo-lancamento">+ Novo lançamento</button>
+      </div>
       <ul id="lista-lancamentos" class="lista"></ul>
       <div id="form-lancamento-wrap"></div>
     `;
@@ -105,7 +107,7 @@ export function renderManutencaoVeiculo(container) {
           <label>Posto/Oficina</label>
           <input id="f-posto" value="${val(i.posto_oficina)}" />
 
-          <label>Caixa (de onde saiu o dinheiro)</label>
+          <label>Caixa</label>
           <select id="f-caixa">
             <option value="">Selecione</option>
             ${all('SELECT id, nome FROM contas_caixa ORDER BY nome').map((c) =>
