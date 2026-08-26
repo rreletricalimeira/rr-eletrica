@@ -96,3 +96,93 @@ CREATE TABLE IF NOT EXISTS meta_backup (
   chave  TEXT PRIMARY KEY,
   valor  TEXT
 );
+
+-- ============================================================
+-- Módulo OS / Financeiro
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS contas_caixa (
+  id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS taxas_cartao (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  parcelas         INTEGER NOT NULL,
+  taxa_percentual  REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS os (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id         INTEGER NOT NULL REFERENCES clientes(id),
+  descricao          TEXT,
+  status_andamento   TEXT DEFAULT 'Aberta',    -- Aberta / Em andamento / Concluída / Cancelada
+  status_pagamento   TEXT DEFAULT 'Pendente',  -- Pendente / Pago / Parcial
+  valor_mao_obra     REAL DEFAULT 0,
+  valor_produtos     REAL DEFAULT 0,           -- somado a partir de os_itens
+  valor_total        REAL DEFAULT 0,           -- mao_obra + produtos
+  forma_pagamento    TEXT,                     -- Dinheiro / Pix / Cartão de Crédito / Cartão de Débito / Boleto
+  parcelas           INTEGER,
+  valor_juros        REAL DEFAULT 0,
+  conta_caixa_id     INTEGER REFERENCES contas_caixa(id),
+  data_abertura      TEXT DEFAULT (datetime('now')),
+  data_conclusao     TEXT,
+  data_pagamento     TEXT,
+  observacao         TEXT
+);
+
+CREATE TABLE IF NOT EXISTS os_itens (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  os_id               INTEGER NOT NULL REFERENCES os(id),
+  produto_id          INTEGER REFERENCES produtos(id),
+  quantidade          REAL NOT NULL DEFAULT 1,
+  valor_custo_unit    REAL,   -- oculto do cliente; snapshot do custo no momento do uso
+  valor_venda_unit    REAL,
+  valor_venda_total   REAL    -- valor_venda_unit * quantidade
+);
+
+CREATE TABLE IF NOT EXISTS financeiro (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  tipo             TEXT NOT NULL,   -- Entrada / Saida
+  data             TEXT DEFAULT (datetime('now')),
+  valor_servico    REAL DEFAULT 0,
+  valor_produtos   REAL DEFAULT 0,
+  valor_total      REAL NOT NULL,
+  categoria        TEXT,
+  descricao        TEXT,
+  os_id            INTEGER REFERENCES os(id),
+  origem           TEXT DEFAULT 'manual',  -- 'automatico' / 'manual'
+  conta_caixa_id   INTEGER REFERENCES contas_caixa(id)
+);
+
+-- ============================================================
+-- Módulo Veículos
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS veiculos (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  veiculo          TEXT NOT NULL,  -- marca e modelo
+  placa            TEXT,
+  ano              INTEGER,
+  cor              TEXT,
+  km_inicial       REAL,
+  data_aquisicao   TEXT,
+  data_venda       TEXT,
+  status           TEXT DEFAULT 'Ativo'  -- Ativo / Vendido
+);
+
+CREATE TABLE IF NOT EXISTS manutencao_veiculo (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  veiculo_id       INTEGER NOT NULL REFERENCES veiculos(id),
+  descricao        TEXT,
+  km               REAL,
+  tipo             TEXT,   -- Abastecimento / Manutenção
+  tanque_cheio     INTEGER DEFAULT 0,
+  data             TEXT DEFAULT (datetime('now')),
+  valor            REAL,
+  litros           REAL,
+  posto_oficina    TEXT,
+  observacao       TEXT,
+  conta_caixa_id   INTEGER REFERENCES contas_caixa(id),
+  financeiro_id    INTEGER REFERENCES financeiro(id)  -- lançamento gerado automaticamente
+);
