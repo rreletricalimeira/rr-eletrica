@@ -10,6 +10,12 @@ import { renderProdutos } from './pages/produtos.js';
 import { renderCategorias } from './pages/categorias.js';
 import { renderUnidades } from './pages/unidades.js';
 import { renderColaboradores } from './pages/colaboradores.js';
+import { renderOS } from './pages/os.js';
+import { renderFinanceiro } from './pages/financeiro.js';
+import { renderTaxasCartao } from './pages/taxas_cartao.js';
+import { renderContasCaixa } from './pages/contas_caixa.js';
+import { renderVeiculos } from './pages/veiculos.js';
+import { renderManutencaoVeiculo } from './pages/manutencao_veiculo.js';
 
 const appEl = document.getElementById('app');
 
@@ -38,9 +44,15 @@ async function iniciarApp() {
         <button data-tab="clientes" class="ativo">Clientes</button>
         <button data-tab="fornecedores">Fornecedores</button>
         <button data-tab="produtos">Produtos</button>
+        <button data-tab="os">OS</button>
+        <button data-tab="financeiro">Financeiro</button>
         <button data-tab="categorias">Categorias</button>
         <button data-tab="unidades">Unidades</button>
         <button data-tab="colaboradores">Colaboradores</button>
+        <button data-tab="taxas_cartao">Taxas Cartão</button>
+        <button data-tab="contas_caixa">Contas/Caixa</button>
+        <button data-tab="veiculos">Veículos</button>
+        <button data-tab="manutencao">Manutenção</button>
         <button data-tab="backup">Backup</button>
       </nav>
       <main id="conteudo"></main>
@@ -60,9 +72,15 @@ async function iniciarApp() {
     clientes: renderClientes,
     fornecedores: renderFornecedores,
     produtos: renderProdutos,
+    os: renderOS,
+    financeiro: renderFinanceiro,
     categorias: renderCategorias,
     unidades: renderUnidades,
     colaboradores: renderColaboradores,
+    taxas_cartao: renderTaxasCartao,
+    contas_caixa: renderContasCaixa,
+    veiculos: renderVeiculos,
+    manutencao: renderManutencaoVeiculo,
     backup: renderBackupPage,
   };
 
