@@ -4,5 +4,5 @@
 // substituir o arquivo, ou o login para de funcionar.
 
 export const CONFIG = {
-  GOOGLE_CLIENT_ID: 'COLE_AQUI_O_MESMO_CLIENT_ID_QUE_JA_ESTA_NO_GITHUB',
+  GOOGLE_CLIENT_ID: '1065497422460-7tapibomvdkkl7eja2nvihdpfpfgjoib.apps.googleusercontent.com',
 };
