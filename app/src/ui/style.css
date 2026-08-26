@@ -202,3 +202,17 @@ button.danger { background: var(--danger); }
 @media (min-width: 1024px) {
   .form-card { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* Filtros do Financeiro: De/Até/Caixa lado a lado no PC, botão embaixo */
+@media (min-width: 720px) {
+  .filtros-financeiro {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 16px;
+    align-items: start;
+  }
+  .filtros-financeiro h3,
+  .filtros-financeiro button {
+    grid-column: 1 / -1;
+  }
+}
