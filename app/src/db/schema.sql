@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS os (
   id                 INTEGER PRIMARY KEY AUTOINCREMENT,
   cliente_id         INTEGER NOT NULL REFERENCES clientes(id),
   descricao          TEXT,
+  tipo_registro      TEXT DEFAULT 'OS',        -- OS / Orçamento — orçamento não gera lançamento no financeiro
   status_andamento   TEXT DEFAULT 'Aberta',    -- Aberta / Em andamento / Concluída / Cancelada
   status_pagamento   TEXT DEFAULT 'Pendente',  -- Pendente / Pago / Parcial
   valor_mao_obra     REAL DEFAULT 0,
