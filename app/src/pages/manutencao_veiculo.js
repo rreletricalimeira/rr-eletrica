@@ -24,9 +24,7 @@ export function renderManutencaoVeiculo(container) {
 
   function renderConteudo(veiculoId) {
     conteudoEl.innerHTML = `
-      <div style="margin-top: 16px;">
-        <button id="btn-novo-lancamento">+ Novo lançamento</button>
-      </div>
+      <button id="btn-novo-lancamento" style="margin-top: 18px;">+ Novo lançamento</button>
       <ul id="lista-lancamentos" class="lista"></ul>
       <div id="form-lancamento-wrap"></div>
     `;
