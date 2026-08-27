@@ -245,3 +245,70 @@ label {
     grid-column: 1 / -1;
   }
 }
+
+/* Painel de confirmação da exportação de PDF (OS): Detalhado / Resumido */
+.overlay-exportar {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.painel-exportar {
+  position: relative;
+  background: #1e293b;
+  color: #6298b8;
+  border-radius: 12px;
+  padding: 28px 24px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.painel-exportar p {
+  margin: 0 0 18px;
+  font-size: 1rem;
+  color: #6298b8;
+}
+
+.painel-exportar-botoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.painel-exportar-botoes button {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px;
+  border: 1px solid #6298b8;
+  border-radius: 8px;
+  background: transparent;
+  color: #6298b8;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.painel-exportar-botoes button:hover {
+  background: #6298b8;
+  color: #1e293b;
+}
+
+.painel-exportar-fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #6298b8;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
