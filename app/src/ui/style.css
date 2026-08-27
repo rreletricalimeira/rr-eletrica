@@ -189,14 +189,22 @@ label {
   display: block;
 }
 
+/* "Escolher foto" e "Tirar foto" são sempre <button> reais (o input de
+   arquivo nativo fica escondido e é acionado por eles), garantindo que os
+   dois fiquem com a mesma altura em qualquer navegador/tela. */
 .linha-foto-botoes {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
 }
-.linha-foto-botoes input[type="file"] { flex: 1; min-width: 160px; }
-.linha-foto-botoes button { margin-bottom: 0; white-space: nowrap; }
+.linha-foto-botoes button {
+  flex: 1;
+  min-width: 160px;
+  margin-top: 0;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
 
 /* ---------- Desktop: formulário em grade multi-coluna, como ERP ---------- */
 @media (min-width: 720px) {
