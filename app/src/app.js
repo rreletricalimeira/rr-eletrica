@@ -62,6 +62,17 @@ async function iniciarApp() {
   const statusLine = document.getElementById('status-line');
   const conteudo = document.getElementById('conteudo');
 
+  // No grid multi-coluna do desktop (ver style.css), cada <label> e cada
+  // campo viram células separadas da grade — então o label de um campo pode
+  // acabar ao lado do campo anterior, em vez de ficar preso em cima do seu
+  // próprio campo. Para consertar sem reescrever cada formulário, agrupamos
+  // automaticamente cada <label> com o campo que vem logo em seguida dentro
+  // de uma <div class="campo">, que passa a ser a célula da grade. Isso roda
+  // toda vez que uma página/formulário é renderizado dentro de #conteudo.
+  agruparCampos(conteudo);
+  new MutationObserver(() => agruparCampos(conteudo))
+    .observe(conteudo, { childList: true, subtree: true });
+
   await initDb();
   statusLine.textContent = 'Banco local pronto.';
 
@@ -168,6 +179,29 @@ async function iniciarApp() {
       atualizarStatusConexao();
     });
   }
+}
+
+// ---------- 4. Agrupa cada <label> com o campo seguinte (ver comentário acima) ----------
+
+function agruparCampos(root) {
+  root.querySelectorAll('.form-card').forEach((form) => {
+    Array.from(form.children).forEach((label) => {
+      // Só mexe em <label> "soltos"; os que já têm classe linha-checkbox
+      // (ex.: "Tanque cheio") já envolvem o próprio input e ficam intactos.
+      if (label.tagName !== 'LABEL' || label.classList.contains('linha-checkbox')) return;
+
+      const campo = document.createElement('div');
+      campo.className = 'campo';
+      form.insertBefore(campo, label);
+      campo.appendChild(label);
+
+      const proximo = campo.nextElementSibling;
+      if (proximo && ['INPUT', 'SELECT', 'TEXTAREA'].includes(proximo.tagName)) {
+        if (proximo.tagName === 'TEXTAREA') campo.classList.add('campo-full');
+        campo.appendChild(proximo);
+      }
+    });
+  });
 }
 
 boot();
