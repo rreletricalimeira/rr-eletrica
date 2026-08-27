@@ -111,6 +111,16 @@ button {
   margin-top: 6px;
   margin-bottom: 8px;
 }
+
+/* Garante respiro entre o último campo de um formulário e o botão
+   "Salvar" — só dentro de formulários em coluna, para não empurrar
+   os botões "Adicionar" que ficam lado a lado com o campo */
+.form-card input + button,
+.form-card select + button,
+.form-card textarea + button,
+.form-card .linha-checkbox + button {
+  margin-top: 18px;
+}
 button.secondary { background: var(--card-2); }
 button.danger { background: var(--danger); }
 
@@ -128,16 +138,9 @@ button.danger { background: var(--danger); }
 .item-sub { font-size: 0.78rem; color: var(--muted); }
 .lista button { margin: 0; padding: 8px 12px; font-size: 0.8rem; }
 
-/* ---------- Formulários ---------- */
-.form-card label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin: 10px 0 4px;
-}
-.form-card input,
-.form-card select,
-.form-card textarea {
+html { color-scheme: dark; }
+
+input, select, textarea {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
@@ -147,12 +150,20 @@ button.danger { background: var(--danger); }
   font-size: 0.95rem;
   text-align: left;
 }
+textarea { min-height: 70px; resize: vertical; }
+
 /* Navegadores alinham <input type="number"> à direita por padrão —
    forçamos à esquerda para bater com os demais campos do formulário */
-.form-card input[type="number"] {
+input[type="number"] {
   text-align: left;
 }
-.form-card textarea { min-height: 70px; resize: vertical; }
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 10px 0 4px;
+}
 .linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text); }
 .linha-checkbox input { width: auto; }
 
