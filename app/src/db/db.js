@@ -65,6 +65,11 @@ async function migrar() {
   if (!colunas.includes('colaborador_id')) {
     db.run('ALTER TABLE clientes ADD COLUMN colaborador_id INTEGER REFERENCES colaboradores(id)');
   }
+
+  const colunasOs = all("PRAGMA table_info(os)").map((c) => c.name);
+  if (!colunasOs.includes('tipo_registro')) {
+    db.run("ALTER TABLE os ADD COLUMN tipo_registro TEXT DEFAULT 'OS'");
+  }
 }
 
 export async function persist() {
