@@ -101,8 +101,9 @@ export function renderProdutos(container) {
 
         <label>Foto do produto (opcional)</label>
         <div class="linha-foto-botoes">
-          <input id="f-foto" type="file" accept="image/*" />
+          <input id="f-foto" type="file" accept="image/*" style="display:none" />
           <input id="f-foto-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+          <button type="button" id="btn-escolher-foto" class="secondary">🖼️ Escolher foto</button>
           <button type="button" id="btn-tirar-foto" class="secondary">📷 Tirar foto</button>
         </div>
         <div id="foto-preview">${p.foto_base64 ? `<img src="${p.foto_base64}" class="foto-preview-img" />` : ''}</div>
@@ -126,6 +127,9 @@ export function renderProdutos(container) {
 
     formWrap.querySelector('#f-foto').addEventListener('change', (e) => processarFoto(e.target.files[0]));
     formWrap.querySelector('#f-foto-camera').addEventListener('change', (e) => processarFoto(e.target.files[0]));
+    formWrap.querySelector('#btn-escolher-foto').addEventListener('click', () => {
+      formWrap.querySelector('#f-foto').click();
+    });
     formWrap.querySelector('#btn-tirar-foto').addEventListener('click', () => {
       formWrap.querySelector('#f-foto-camera').click();
     });
