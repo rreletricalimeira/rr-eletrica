@@ -78,7 +78,7 @@ export function renderClientes(container) {
         <label>UF</label>
         <input id="f-uf" value="${val(cliente.uf)}" maxlength="2" />
 
-        <label>Fone 1</label>
+        <label>Fone</label>
         <input id="f-fone1" value="${val(cliente.fone1)}" placeholder="(99) 9999-9999" />
 
         <label>Celular 1</label>
@@ -122,7 +122,7 @@ export function renderClientes(container) {
         <label>Data de Nascimento</label>
         <input id="f-nascimento" type="date" value="${val(cliente.data_nascimento)}" />
 
-        <label>Colaborador (quem indicou)</label>
+        <label>Colaborador</label>
         <select id="f-colaborador">
           <option value="">Selecione</option>
           ${all('SELECT id, nome FROM colaboradores ORDER BY nome').map((c) =>

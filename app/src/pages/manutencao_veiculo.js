@@ -98,7 +98,7 @@ export function renderManutencaoVeiculo(container) {
             <label>Litros</label>
             <input id="f-litros" type="number" step="0.01" value="${val(i.litros)}" />
 
-            <label class="linha-checkbox"><input id="f-tanque-cheio" type="checkbox" ${i.tanque_cheio ? 'checked' : ''} /> Tanque cheio (para cálculo de média)</label>
+            <label class="linha-checkbox"><input id="f-tanque-cheio" type="checkbox" ${i.tanque_cheio ? 'checked' : ''} /> Tanque cheio</label>
           </div>
 
           <label>Data</label>

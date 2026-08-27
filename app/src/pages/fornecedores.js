@@ -54,7 +54,12 @@ export function renderFornecedores(container) {
         <input id="f-contato" value="${val(f.contato)}" />
 
         <label>Segmento</label>
-        <input id="f-segmento" value="${val(f.segmento)}" />
+        <select id="f-segmento">
+          <option value="">Selecione</option>
+          ${['Elétrica', 'Automação', 'Segurança eletrônica', 'Hidráulica', 'Produtos para Piscinas'].map((s) =>
+            `<option value="${s}" ${f.segmento === s ? 'selected' : ''}>${s}</option>`
+          ).join('')}
+        </select>
 
         <label>CEP</label>
         <input id="f-cep" value="${val(f.cep)}" placeholder="00000-000" />
@@ -71,7 +76,7 @@ export function renderFornecedores(container) {
         <label>UF</label>
         <input id="f-uf" value="${val(f.uf)}" maxlength="2" />
 
-        <label>Fone 1</label>
+        <label>Fone</label>
         <input id="f-fone1" value="${val(f.fone1)}" placeholder="(99) 9999-9999" />
 
         <label>Celular 1</label>
