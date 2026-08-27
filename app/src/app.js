@@ -199,6 +199,13 @@ function agruparCampos(root) {
       if (proximo && ['INPUT', 'SELECT', 'TEXTAREA'].includes(proximo.tagName)) {
         if (proximo.tagName === 'TEXTAREA') campo.classList.add('campo-full');
         campo.appendChild(proximo);
+      } else if (proximo && proximo.tagName === 'DIV') {
+        // Ex.: label "Foto do produto" seguida da div com os botões de foto —
+        // não é um campo de formulário comum, mas ainda assim precisa ficar
+        // colado no label, ocupando a linha inteira (senão sobra um espaço
+        // vazio ao lado do label na grade do desktop).
+        campo.classList.add('campo-full');
+        campo.appendChild(proximo);
       }
     });
   });
