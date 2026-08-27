@@ -72,6 +72,11 @@ export function renderManutencaoVeiculo(container) {
 
     function renderForm(id = null) {
       const i = id ? all('SELECT * FROM manutencao_veiculo WHERE id = ?', [id])[0] : {};
+      // Quando é lançamento novo, o <select> ainda não tem opção marcada com
+      // "selected", então o navegador seleciona a primeira (Abastecimento).
+      // Usamos o mesmo valor aqui para decidir se o bloco de litros começa visível,
+      // senão ele ficava escondido até o usuário trocar o tipo manualmente.
+      const tipoAtual = i.tipo || 'Abastecimento';
 
       formWrap.innerHTML = `
         <div class="card form-card">
@@ -89,7 +94,7 @@ export function renderManutencaoVeiculo(container) {
             <option value="Manutenção" ${i.tipo === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
           </select>
 
-          <div id="bloco-litros" style="display:${i.tipo === 'Abastecimento' ? 'block' : 'none'}">
+          <div id="bloco-litros" style="display:${tipoAtual === 'Abastecimento' ? 'block' : 'none'}">
             <label>Litros</label>
             <input id="f-litros" type="number" step="0.01" value="${val(i.litros)}" />
 
