@@ -115,9 +115,7 @@ button {
 /* Garante respiro entre o último campo de um formulário e o botão
    "Salvar" — só dentro de formulários em coluna, para não empurrar
    os botões "Adicionar" que ficam lado a lado com o campo */
-.form-card input + button,
-.form-card select + button,
-.form-card textarea + button,
+.form-card .campo + button,
 .form-card .linha-checkbox + button {
   margin-top: 18px;
 }
@@ -164,6 +162,18 @@ label {
   color: var(--muted);
   margin: 10px 0 4px;
 }
+
+/* Envolve label + campo (criado via JS em app.js) para que os dois sempre
+   fiquem juntos e o label preso em cima do seu próprio campo, tanto no
+   celular quanto no grid multi-coluna do desktop. O espaçamento entre
+   campos, antes vindo da margem do label, passa a ficar na própria div. */
+.form-card .campo {
+  min-width: 0;
+  margin-top: 10px;
+}
+.form-card .campo label {
+  margin-top: 0;
+}
 .linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text); }
 .linha-checkbox input { width: auto; }
 
@@ -198,11 +208,11 @@ label {
   }
   .form-card h3,
   .form-card #foto-preview,
-  .form-card textarea,
   .form-card button,
   .form-card #form-erro,
   .form-card .linha-checkbox,
-  .form-card .linha-foto-botoes {
+  .form-card .linha-foto-botoes,
+  .form-card .campo-full {
     grid-column: 1 / -1;
   }
 
