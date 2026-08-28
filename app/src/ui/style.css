@@ -167,11 +167,13 @@ label {
    fiquem juntos e o label preso em cima do seu próprio campo, tanto no
    celular quanto no grid multi-coluna do desktop. O espaçamento entre
    campos, antes vindo da margem do label, passa a ficar na própria div. */
-.form-card .campo {
+.form-card .campo,
+.filtros-financeiro .campo {
   min-width: 0;
   margin-top: 10px;
 }
-.form-card .campo label {
+.form-card .campo label,
+.filtros-financeiro .campo label {
   margin-top: 0;
 }
 .linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text); }
