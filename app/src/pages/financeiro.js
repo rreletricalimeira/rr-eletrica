@@ -7,10 +7,10 @@ export function renderFinanceiro(container) {
 
       <div class="card filtros-financeiro">
         <h3>Filtros</h3>
-        <div class="linha-dupla">
-          <div><label>De</label><input id="filtro-de" type="date" /></div>
-          <div><label>Até</label><input id="filtro-ate" type="date" /></div>
-        </div>
+        <label>De</label>
+        <input id="filtro-de" type="date" />
+        <label>Até</label>
+        <input id="filtro-ate" type="date" />
         <label>Caixa</label>
         <select id="filtro-caixa">
           <option value="">(Todos)</option>
