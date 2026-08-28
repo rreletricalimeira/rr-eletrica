@@ -3,7 +3,7 @@
 // IMPORTANTE: o número da versão do cache muda a cada atualização de
 // código para forçar o navegador a buscar os arquivos novos.
 
-const CACHE_NAME = 'rr-eletrica-v5';
+const CACHE_NAME = 'rr-eletrica-v6';
 const CORE_ASSETS = [
   './',
   './index.html',
