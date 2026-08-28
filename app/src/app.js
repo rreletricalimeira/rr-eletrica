@@ -184,7 +184,7 @@ async function iniciarApp() {
 // ---------- 4. Agrupa cada <label> com o campo seguinte (ver comentário acima) ----------
 
 function agruparCampos(root) {
-  root.querySelectorAll('.form-card').forEach((form) => {
+  root.querySelectorAll('.form-card, .filtros-financeiro').forEach((form) => {
     Array.from(form.children).forEach((label) => {
       // Só mexe em <label> "soltos"; os que já têm classe linha-checkbox
       // (ex.: "Tanque cheio") já envolvem o próprio input e ficam intactos.
