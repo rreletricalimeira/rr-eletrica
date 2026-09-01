@@ -187,3 +187,38 @@ CREATE TABLE IF NOT EXISTS manutencao_veiculo (
   conta_caixa_id   INTEGER REFERENCES contas_caixa(id),
   financeiro_id    INTEGER REFERENCES financeiro(id)  -- lançamento gerado automaticamente
 );
+
+-- ============================================================
+-- Módulo Técnico / Laudos
+-- ============================================================
+-- O checklist (painel, bombas/motores + inversor, ambiente, medições) e as
+-- não conformidades têm quantidade de itens variável (ex.: "+ Adicionar
+-- bomba"), então em vez de dezenas de colunas fixas guardamos essa parte
+-- como um único JSON em dados_json. Os campos que aparecem nas listagens
+-- e relatórios (cliente, datas, parecer) ficam como colunas normais.
+
+CREATE TABLE IF NOT EXISTS laudos (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero                          TEXT,
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco                        TEXT,
+  telefone                        TEXT,
+  celular                         TEXT,
+  data_visita                     TEXT,
+  hora_visita                     TEXT,
+  responsavel_tecnico             TEXT,
+  acompanhante                    TEXT,
+  tipo_instalacao                 TEXT DEFAULT 'Residencial',
+  dados_json                      TEXT,   -- painel, bombas, ambiente, medições, não conformidades
+  estimativa_economia             TEXT,
+  parecer_classificacao           TEXT,
+  parecer_descricao               TEXT,
+  fotos_json                      TEXT,   -- [{ dado_base64, legenda }]
+  assinatura_responsavel_base64   TEXT,
+  data_assinatura_responsavel     TEXT,
+  assinatura_cliente_base64       TEXT,
+  data_assinatura_cliente         TEXT,
+  status                          TEXT DEFAULT 'Rascunho',  -- Rascunho / Concluído
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);
+
