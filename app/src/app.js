@@ -4,6 +4,8 @@ import {
   getLastBackupTime, setStatusListener, enableAutoBackup, NotConnectedError,
 } from './db/backup.js';
 import { hasPinConfigured, isUnlockedThisSession, renderLockScreen } from './auth-pin.js';
+
+// ---------- Páginas do ERP ----------
 import { renderClientes } from './pages/clientes.js';
 import { renderFornecedores } from './pages/fornecedores.js';
 import { renderProdutos } from './pages/produtos.js';
@@ -16,6 +18,11 @@ import { renderTaxasCartao } from './pages/taxas_cartao.js';
 import { renderContasCaixa } from './pages/contas_caixa.js';
 import { renderVeiculos } from './pages/veiculos.js';
 import { renderManutencaoVeiculo } from './pages/manutencao_veiculo.js';
+
+// ---------- Páginas do Técnico ----------
+import { renderLaudos } from './pages-tecnico/laudos.js';
+import { renderVisitas } from './pages-tecnico/visitas.js';
+import { renderDocumentos } from './pages-tecnico/documentos.js';
 
 const appEl = document.getElementById('app');
 
@@ -35,31 +42,19 @@ async function iniciarApp() {
   appEl.innerHTML = `
     <div class="app-shell">
       <div class="topbar">
-        <h1>RR Elétrica</h1>
+        <h1 id="titulo-app">RR Elétrica</h1>
         <div>
           <div id="status-line" class="status-line">Inicializando...</div>
         </div>
       </div>
-      <nav class="tabs">
-        <button data-tab="clientes" class="ativo">Clientes</button>
-        <button data-tab="fornecedores">Fornecedores</button>
-        <button data-tab="produtos">Produtos</button>
-        <button data-tab="os">OS</button>
-        <button data-tab="financeiro">Financeiro</button>
-        <button data-tab="categorias">Categorias</button>
-        <button data-tab="unidades">Unidades</button>
-        <button data-tab="colaboradores">Colaboradores</button>
-        <button data-tab="taxas_cartao">Taxas Cartão</button>
-        <button data-tab="contas_caixa">Contas/Caixa</button>
-        <button data-tab="veiculos">Veículos</button>
-        <button data-tab="manutencao">Manutenção</button>
-        <button data-tab="backup">Backup</button>
-      </nav>
+      <nav class="tabs" id="nav-tabs"></nav>
       <main id="conteudo"></main>
     </div>
   `;
 
+  const tituloApp = document.getElementById('titulo-app');
   const statusLine = document.getElementById('status-line');
+  const navTabs = document.getElementById('nav-tabs');
   const conteudo = document.getElementById('conteudo');
 
   // No grid multi-coluna do desktop (ver style.css), cada <label> e cada
@@ -68,7 +63,8 @@ async function iniciarApp() {
   // próprio campo. Para consertar sem reescrever cada formulário, agrupamos
   // automaticamente cada <label> com o campo que vem logo em seguida dentro
   // de uma <div class="campo">, que passa a ser a célula da grade. Isso roda
-  // toda vez que uma página/formulário é renderizado dentro de #conteudo.
+  // toda vez que uma página/formulário é renderizado dentro de #conteudo —
+  // tanto do ERP quanto do Técnico, já que os dois usam o mesmo #conteudo.
   agruparCampos(conteudo);
   new MutationObserver(() => agruparCampos(conteudo))
     .observe(conteudo, { childList: true, subtree: true });
@@ -79,7 +75,54 @@ async function iniciarApp() {
   await initAuth().catch((e) => { statusLine.textContent = e.message; });
   enableAutoBackup();
 
-  const paginas = {
+  // ---------- 3. Roteador de topo: tela inicial / ERP / Técnico ----------
+  // A URL usa #/erp/<aba> e #/tecnico/<aba>, o que permite os atalhos do
+  // manifest.json (shortcuts) abrirem direto numa das duas verticais.
+
+  function irPara(rota) {
+    location.hash = rota;
+  }
+
+  function renderRota() {
+    const hash = location.hash.replace(/^#\/?/, '');
+    if (hash.startsWith('erp')) {
+      montarERP(hash.split('/')[1]);
+    } else if (hash.startsWith('tecnico')) {
+      montarTecnico(hash.split('/')[1]);
+    } else {
+      montarHome();
+    }
+  }
+
+  function montarHome() {
+    tituloApp.textContent = 'RR Elétrica';
+    navTabs.style.display = 'none';
+    navTabs.innerHTML = '';
+    conteudo.innerHTML = `
+      <div class="home-verticais">
+        <button type="button" class="card-vertical" id="btn-ir-erp">
+          <span class="home-icone">🗂️</span>
+          <span class="home-titulo">ERP</span>
+          <span class="home-desc">Clientes, ordens de serviço, financeiro, estoque e veículos</span>
+        </button>
+        <button type="button" class="card-vertical" id="btn-ir-tecnico">
+          <span class="home-icone">🛠️</span>
+          <span class="home-titulo">Técnico</span>
+          <span class="home-desc">Laudos técnicos, visitas e documentos em campo</span>
+        </button>
+      </div>
+    `;
+    conteudo.querySelector('#btn-ir-erp').addEventListener('click', () => irPara('#/erp/clientes'));
+    conteudo.querySelector('#btn-ir-tecnico').addEventListener('click', () => irPara('#/tecnico/laudos'));
+  }
+
+  function ativarAba(aba) {
+    navTabs.querySelectorAll('button[data-tab]').forEach((b) => {
+      b.classList.toggle('ativo', b.dataset.tab === aba);
+    });
+  }
+
+  const paginasErp = {
     clientes: renderClientes,
     fornecedores: renderFornecedores,
     produtos: renderProdutos,
@@ -95,17 +138,66 @@ async function iniciarApp() {
     backup: renderBackupPage,
   };
 
-  document.querySelectorAll('nav.tabs button').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('nav.tabs button').forEach((b) => b.classList.remove('ativo'));
-      btn.classList.add('ativo');
-      paginas[btn.dataset.tab](conteudo);
+  function montarERP(aba) {
+    tituloApp.textContent = 'RR Elétrica · ERP';
+    const abaAtual = aba && paginasErp[aba] ? aba : 'clientes';
+    navTabs.style.display = '';
+    navTabs.innerHTML = `
+      <button data-tab="voltar" class="nav-voltar">← Início</button>
+      <button data-tab="clientes">Clientes</button>
+      <button data-tab="fornecedores">Fornecedores</button>
+      <button data-tab="produtos">Produtos</button>
+      <button data-tab="os">OS</button>
+      <button data-tab="financeiro">Financeiro</button>
+      <button data-tab="categorias">Categorias</button>
+      <button data-tab="unidades">Unidades</button>
+      <button data-tab="colaboradores">Colaboradores</button>
+      <button data-tab="taxas_cartao">Taxas Cartão</button>
+      <button data-tab="contas_caixa">Contas/Caixa</button>
+      <button data-tab="veiculos">Veículos</button>
+      <button data-tab="manutencao">Manutenção</button>
+      <button data-tab="backup">Backup</button>
+    `;
+    ativarAba(abaAtual);
+    navTabs.querySelectorAll('button[data-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'voltar') { irPara(''); return; }
+        irPara(`#/erp/${btn.dataset.tab}`);
+      });
     });
-  });
+    paginasErp[abaAtual](conteudo);
+  }
 
-  paginas.clientes(conteudo);
+  const paginasTecnico = {
+    laudos: renderLaudos,
+    visitas: renderVisitas,
+    documentos: renderDocumentos,
+  };
 
-  // ---------- 3. Página de Backup, com avisos claros de conexão ----------
+  function montarTecnico(aba) {
+    tituloApp.textContent = 'RR Elétrica · Técnico';
+    const abaAtual = aba && paginasTecnico[aba] ? aba : 'laudos';
+    navTabs.style.display = '';
+    navTabs.innerHTML = `
+      <button data-tab="voltar" class="nav-voltar">← Início</button>
+      <button data-tab="laudos">Laudos</button>
+      <button data-tab="visitas">Visitas</button>
+      <button data-tab="documentos">Documentos</button>
+    `;
+    ativarAba(abaAtual);
+    navTabs.querySelectorAll('button[data-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'voltar') { irPara(''); return; }
+        irPara(`#/tecnico/${btn.dataset.tab}`);
+      });
+    });
+    paginasTecnico[abaAtual](conteudo);
+  }
+
+  window.addEventListener('hashchange', renderRota);
+  renderRota();
+
+  // ---------- 4. Página de Backup, com avisos claros de conexão ----------
 
   function renderBackupPage(container) {
     container.innerHTML = `
@@ -181,7 +273,7 @@ async function iniciarApp() {
   }
 }
 
-// ---------- 4. Agrupa cada <label> com o campo seguinte (ver comentário acima) ----------
+// ---------- 5. Agrupa cada <label> com o campo seguinte (ver comentário acima) ----------
 
 function agruparCampos(root) {
   root.querySelectorAll('.form-card, .filtros-financeiro').forEach((form) => {
