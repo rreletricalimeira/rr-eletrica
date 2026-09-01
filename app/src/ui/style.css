@@ -179,6 +179,70 @@ label {
 .linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text); }
 .linha-checkbox input { width: auto; }
 
+/* ---------- Tela inicial: escolha entre ERP e Técnico ---------- */
+.home-verticais {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 420px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+.card-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  margin: 0;
+}
+.card-vertical:hover { border-color: var(--accent); }
+.home-icone { font-size: 1.8rem; }
+.home-titulo { font-size: 1.15rem; font-weight: 600; }
+.home-desc { font-size: 0.82rem; color: var(--muted); }
+
+@media (min-width: 720px) {
+  .home-verticais { flex-direction: row; max-width: 700px; }
+  .card-vertical { flex: 1; }
+}
+
+nav.tabs button.nav-voltar { color: var(--accent); font-weight: 600; }
+
+/* ---------- Blocos repetíveis dentro de um card (ex.: bombas, motores,
+   não conformidades e fotos do laudo técnico) ---------- */
+.subcard {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+}
+.subcard-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+h4 { margin: 18px 0 4px; font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; font-weight: 600; }
+
+/* Canvas de assinatura (encerramento do laudo) */
+.assinatura-canvas {
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  touch-action: none;
+  display: block;
+}
+
 .linha-dupla { display: flex; gap: 10px; }
 .linha-dupla > div { flex: 1; }
 .campo-uf { max-width: 80px; }
