@@ -1,0 +1,415 @@
+:root {
+  --bg: #ece9d8;
+  --card: #ffffff;
+  --card-2: #f4f2ea;
+  --text: #1a1a1a;
+  --muted: #5f5f5f;
+  --accent: #0a4d8c;
+  --accent-light: #5fa4e8;
+  --danger: #a02c2c;
+  --border: #a0a0a0;
+  --border-dark: #7d7d7d;
+  --input-bg: #ffffff;
+  --grid-header: #d4d0c8;
+  --grid-row-alt: #f3f1e9;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Tela de bloqueio (PIN) ---------- */
+.lock-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+.lock-screen h1 { margin-bottom: 4px; color: var(--accent); }
+.lock-screen input {
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 6px;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 2px;
+  border: 1px solid var(--border-dark);
+  background: var(--input-bg);
+  color: var(--text);
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.25);
+}
+.lock-screen button {
+  width: 100%;
+  max-width: 280px;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border-dark);
+  background: linear-gradient(to bottom, #fdfdfd, #d8d8d8);
+  color: var(--text);
+  font-size: 1rem;
+}
+.lock-screen button:active { background: linear-gradient(to bottom, #cfcfcf, #bcbcbc); }
+.pin-erro { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; font-weight: bold; }
+
+/* ---------- Layout geral do app ---------- */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+.topbar {
+  padding: 10px 16px;
+  background: linear-gradient(to bottom, var(--accent-light), var(--accent));
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-dark);
+}
+.topbar h1 { font-size: 1.05rem; margin: 0; font-weight: bold; }
+.status-line { font-size: 0.75rem; color: #e4eefb; }
+
+nav.tabs {
+  display: flex;
+  overflow-x: auto;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-dark);
+  padding: 6px 6px 0 6px;
+  gap: 2px;
+}
+nav.tabs button {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  background: #d8d5c8;
+  border: 1px solid var(--border-dark);
+  border-bottom: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0;
+  border-radius: 0;
+}
+nav.tabs button.ativo {
+  color: var(--text);
+  background: var(--card-2);
+  font-weight: bold;
+  position: relative;
+  top: 1px;
+}
+
+main { flex: 1; padding: 16px; max-width: 1100px; width: 100%; margin: 0 auto; }
+
+/* ---------- Cartões / listas ---------- */
+.card {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+button {
+  padding: 8px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border-dark);
+  background: linear-gradient(to bottom, #fdfdfd, #d8d8d8);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+button:active { background: linear-gradient(to bottom, #cfcfcf, #bcbcbc); }
+
+/* Garante respiro entre o último campo de um formulário e o botão
+   "Salvar" — só dentro de formulários em coluna, para não empurrar
+   os botões "Adicionar" que ficam lado a lado com o campo */
+.form-card .campo + button,
+.form-card .linha-checkbox + button {
+  margin-top: 18px;
+}
+button.secondary { background: linear-gradient(to bottom, #f4f2ea, #d8d5c8); }
+button.danger {
+  background: linear-gradient(to bottom, #e08c8c, var(--danger));
+  color: #ffffff;
+  border-color: #6e1c1c;
+}
+
+.lista { list-style: none; padding: 0; margin: 12px 0; border: 1px solid var(--border); }
+.lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  background: var(--card);
+}
+.lista li:nth-child(even) { background: var(--grid-row-alt); }
+.lista li:last-child { border-bottom: none; }
+.lista li.item-descontinuado { opacity: 0.5; }
+.item-principal { display: flex; flex-direction: column; }
+.item-sub { font-size: 0.78rem; color: var(--muted); }
+.lista button { margin: 0; padding: 6px 10px; font-size: 0.78rem; }
+
+html { color-scheme: light; }
+
+input, select, textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border-dark);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  text-align: left;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.18);
+}
+textarea { min-height: 70px; resize: vertical; }
+
+/* Navegadores alinham <input type="number"> à direita por padrão —
+   forçamos à esquerda para bater com os demais campos do formulário */
+input[type="number"] {
+  text-align: left;
+}
+
+label {
+  display: block;
+  font-size: 0.78rem;
+  color: #333;
+  margin: 10px 0 3px;
+}
+
+/* Envolve label + campo (criado via JS em app.js) para que os dois sempre
+   fiquem juntos e o label preso em cima do seu próprio campo, tanto no
+   celular quanto no grid multi-coluna do desktop. O espaçamento entre
+   campos, antes vindo da margem do label, passa a ficar na própria div. */
+.form-card .campo,
+.filtros-financeiro .campo {
+  min-width: 0;
+  margin-top: 10px;
+}
+.form-card .campo label,
+.filtros-financeiro .campo label {
+  margin-top: 0;
+}
+.linha-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text); }
+.linha-checkbox input { width: auto; box-shadow: none; }
+
+/* ---------- Tela inicial: escolha entre ERP e Técnico ---------- */
+.home-verticais {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 420px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+.card-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border-dark);
+  border-radius: 3px;
+  padding: 22px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  margin: 0;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+}
+.card-vertical:hover { border-color: var(--accent); background: var(--card-2); }
+.home-icone { font-size: 1.8rem; }
+.home-titulo { font-size: 1.1rem; font-weight: bold; color: var(--accent); }
+.home-desc { font-size: 0.82rem; color: var(--muted); }
+
+@media (min-width: 720px) {
+  .home-verticais { flex-direction: row; max-width: 700px; }
+  .card-vertical { flex: 1; }
+}
+
+nav.tabs button.nav-voltar { color: var(--accent); font-weight: bold; }
+
+/* ---------- Blocos repetíveis dentro de um card (ex.: bombas, motores,
+   não conformidades e fotos do laudo técnico) ---------- */
+.subcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 14px;
+  margin-top: 12px;
+}
+.subcard-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+h4 {
+  margin: 18px 0 6px;
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: .02em;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 3px;
+}
+
+/* Canvas de assinatura (encerramento do laudo) */
+.assinatura-canvas {
+  width: 100%;
+  height: 160px;
+  border-radius: 2px;
+  border: 1px dashed var(--border-dark);
+  background: var(--card);
+  touch-action: none;
+  display: block;
+}
+
+.linha-dupla { display: flex; gap: 10px; }
+.linha-dupla > div { flex: 1; }
+.campo-uf { max-width: 80px; }
+.campo-uf input { max-width: 80px; }
+
+.foto-preview-img {
+  max-width: 120px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-top: 8px;
+  display: block;
+}
+
+/* "Escolher foto" e "Tirar foto" são sempre <button> reais (o input de
+   arquivo nativo fica escondido e é acionado por eles), garantindo que os
+   dois fiquem com a mesma altura em qualquer navegador/tela. */
+.linha-foto-botoes {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.linha-foto-botoes button {
+  flex: 1;
+  min-width: 160px;
+  margin-top: 0;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+/* ---------- Desktop: formulário em grade multi-coluna, como ERP ---------- */
+@media (min-width: 720px) {
+  .form-card {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 16px;
+    align-items: start;
+  }
+  .form-card h3,
+  .form-card #foto-preview,
+  .form-card button,
+  .form-card #form-erro,
+  .form-card .linha-checkbox,
+  .form-card .linha-foto-botoes,
+  .form-card .campo-full {
+    grid-column: 1 / -1;
+  }
+
+  .lista li { padding: 8px 10px; }
+  .lista li:hover { background: #dceaf7; }
+}
+
+@media (min-width: 1024px) {
+  .form-card { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Filtros do Financeiro: De/Até/Caixa lado a lado no PC, botão embaixo */
+@media (min-width: 720px) {
+  .filtros-financeiro {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 16px;
+    align-items: start;
+  }
+  .filtros-financeiro h3,
+  .filtros-financeiro button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Painel de confirmação da exportação de PDF (OS): Detalhado / Resumido */
+.overlay-exportar {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.painel-exportar {
+  position: relative;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border-dark);
+  border-radius: 3px;
+  padding: 28px 24px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.painel-exportar p {
+  margin: 0 0 18px;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.painel-exportar-botoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.painel-exportar-botoes button {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.painel-exportar-botoes button:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.painel-exportar-fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
