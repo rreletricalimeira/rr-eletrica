@@ -1,22 +1,29 @@
-# Atualização do site RR Elétrica
+# Atualização v2 — RR Elétrica
 
-Esta pasta contém os arquivos alterados conforme o PDF **Mudanças no site RR Elétrica** e as imagens enviadas para a página inicial e para a linha RAITEC.
+Esta versão incorpora os ajustes solicitados após a revisão da página inicial.
 
-## Arquivos para substituir/adicionar
-- `index.html` — nova página inicial.
-- `raitec.html` — nova página completa dos painéis RAITEC.
-- `eletrica-industrial.html` — nova apresentação industrial.
-- `eletrica-comercial.html` — nova página comercial (arquivo novo).
-- `eletrica-residencial.html` — nova apresentação residencial.
-- `piscinas.html` — nova página de piscinas (arquivo novo).
-- `seguranca-eletronica.html` — nova apresentação de segurança.
-- `partials/header.html` — novo menu e localização Limeira e região.
-- `partials/footer.html` — novo rodapé.
-- `site-refresh.css` — camada visual da nova identidade/layout.
-- `assets/` — imagens novas.
+## Página inicial
+- Removido o desenho de motor que aparecia ao lado do título do hero; o plano de fundo permanece.
+- Removida a faixa repetida `PROJETO → DIMENSIONAMENTO → QUADROS → INSTALAÇÃO → TESTES → MANUTENÇÃO`.
+- Na seção `Um só fornecedor`, o fluxo agora é: Projeto → Dimensionamento → Montagem → Instalação → Testes → Manutenção.
+- O link de `PAINEL DE COMANDO` agora aponta para `eletrica-industrial.html`.
+- Alterado `Precisa de mais de uma frente?` para `Precisa de outro serviço?`.
+- Trocadas entre si as imagens das seções `Elétrica e painéis para piscinas` e `Distribuidor exclusivo RAITEC Eletrônica`.
+- Removida a faixa repetida abaixo dos diferenciais.
+- Aumentado o espaçamento entre os itens do menu no topo.
+- Ajustada a proporção visual do logo no rodapé, aumentando sua altura sem distorção.
+
+## Nova página
+- Criada `todos-servicos.html`, com a lista dos serviços prestados pela RR Elétrica, organizada em seis áreas: Industrial, Comercial, Residencial, Piscinas, Painéis RAITEC e Segurança Eletrônica.
+- Adicionado o link `Todos os serviços` ao rodapé.
+
+## Arquivos
+- `index.html`
+- `todos-servicos.html`
+- `partials/header.html`
+- `partials/footer.html`
+- `site-refresh.css`
+- `assets/` (mantidos os arquivos da atualização anterior)
 
 ## Importante
-- A pasta `app/` não faz parte desta atualização e não deve ser alterada.
-- O arquivo `style.css` original deve permanecer no projeto. As páginas carregam `site-refresh.css` depois dele para aplicar o novo layout.
-- O `script.js` original continua sendo usado para menu, parciais e demais interações.
-- O formulário existente e a página `sobre-contato.html` não foram substituídos nesta etapa.
+A pasta `app/` não está incluída e não deve ser alterada. O `style.css`, `script.js` e `sobre-contato.html` continuam sendo os arquivos existentes do projeto principal.
