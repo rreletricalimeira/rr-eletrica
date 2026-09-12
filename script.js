@@ -2,11 +2,17 @@
 
 async function includePartials() {
   const headerSlot = document.getElementById('siteHeader');
+  const heroSlot = document.getElementById('siteHero');
   const footerSlot = document.getElementById('siteFooter');
   const tasks = [];
   if (headerSlot) {
     tasks.push(
       fetch('partials/header.html').then(r => r.text()).then(html => { headerSlot.innerHTML = html; })
+    );
+  }
+  if (heroSlot) {
+    tasks.push(
+      fetch('partials/hero.html').then(r => r.text()).then(html => { heroSlot.innerHTML = html; })
     );
   }
   if (footerSlot) {

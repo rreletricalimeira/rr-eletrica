@@ -951,18 +951,14 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 .service-cell-body p{ margin-top:auto; padding-top:8px; }
 
 /* Foto real no bloco "Especialidade Raitec" (antes era um SVG) */
-.pool-photo{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-  z-index:0;
+.pool-visual-photo{
+  margin-top:20px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  max-height:170px;
 }
-.pool-visual-overlay{
-  position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(13,30,45,.25), rgba(9,18,27,.9));
-  z-index:1;
-}
-.pool-visual .badge, .pool-visual h3, .pool-visual p{ z-index:2; }
+.pool-visual-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 /* Bloco "Distribuidor exclusivo Raitec" */
 .distribuidor-block{
@@ -1099,18 +1095,36 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 .raitec-line-head h3{ font-size:1.35rem; color:var(--text); margin:10px 0 8px; }
 .raitec-line-head p{ color:var(--text-dim); font-size:.95rem; margin:0; }
 
+.raitec-panel-block{
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  background:var(--panel);
+  margin-bottom:8px;
+}
+.raitec-panel-block .raitec-photos-row,
+.raitec-panel-block .compare-table{ min-width:640px; }
+.raitec-panel-block.cols-2 .raitec-photos-row,
+.raitec-panel-block.cols-2 .compare-table{ min-width:440px; }
+.raitec-panel-block.cols-1 .raitec-photos-row,
+.raitec-panel-block.cols-1 .compare-table{ min-width:300px; }
 .raitec-photos-row{
   display:grid;
   grid-template-columns:repeat(3, 1fr);
-  gap:20px;
-  margin-bottom:22px;
 }
-.raitec-photos-row.cols-2{ grid-template-columns:repeat(2,1fr); max-width:640px; margin-left:auto; margin-right:auto; }
-.raitec-photos-row.cols-1{ grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto; }
+.raitec-photos-row.cols-2{ grid-template-columns:repeat(2,1fr); }
+.raitec-photos-row.cols-1{ grid-template-columns:1fr; }
+.raitec-photo-cell{
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  display:flex; flex-direction:column;
+}
+.raitec-photo-cell:last-child{ border-right:none; }
 .raitec-photo-card{
-  background:linear-gradient(180deg, var(--panel-2), var(--panel));
-  border:1px solid var(--line);
-  border-radius:14px;
+  background:
+    linear-gradient(180deg, rgba(6,10,14,.55), rgba(6,10,14,.72)),
+    url("assets/raitec/panel-bg.svg") center/cover no-repeat;
   padding:22px;
   display:flex; align-items:center; justify-content:center;
   aspect-ratio:4/3;
@@ -1123,22 +1137,13 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
   font-size:.72rem;
   letter-spacing:.06em;
   color:var(--text-faint);
-  margin-top:-10px;
-  margin-bottom:22px;
   text-transform:uppercase;
+  padding:10px 8px;
+  border-top:1px solid var(--line);
 }
-.raitec-photo-label-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
-.raitec-photo-label-row.cols-2{ grid-template-columns:repeat(2,1fr); max-width:640px; margin-left:auto; margin-right:auto; }
-.raitec-photo-label-row.cols-1{ grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto; }
 
-.compare-table-wrap{
-  border:1px solid var(--line);
-  border-radius:14px;
-  overflow:hidden;
-  background:var(--panel);
-  margin-bottom:8px;
-}
-.compare-table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+.compare-table-wrap{ width:100%; }
+.compare-table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:.9rem; }
 .compare-table tr{ border-bottom:1px solid var(--line); }
 .compare-table tr:last-child{ border-bottom:none; }
 .compare-table td{ padding:14px 16px; color:var(--text-dim); text-align:center; vertical-align:middle; }
@@ -1152,13 +1157,13 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
   border-right:1px solid var(--line);
 }
 .compare-table tr.row-split td:last-child{ border-right:none; }
-.compare-table tr.row-full td{ text-align:left; padding-left:24px; }
-.compare-table tr.row-single td{ text-align:left; padding-left:24px; }
 
 .raitec-encomenda-photo{
   max-width:340px;
   margin:0 auto 8px;
-  background:linear-gradient(180deg, var(--panel-2), var(--panel));
+  background:
+    linear-gradient(180deg, rgba(6,10,14,.55), rgba(6,10,14,.72)),
+    url("assets/raitec/panel-bg.svg") center/cover no-repeat;
   border:1px solid var(--line);
   border-radius:14px;
   padding:22px;
@@ -1172,11 +1177,3 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 .raitec-encomenda-copy b{ color:var(--text); }
 
 .lightbox-content img{ width:100%; height:auto; display:block; }
-
-@media (max-width:760px){
-  .raitec-photos-row, .raitec-photo-label-row{ grid-template-columns:repeat(2,1fr); }
-  .raitec-photos-row.cols-1, .raitec-photo-label-row.cols-1{ grid-template-columns:1fr; }
-}
-@media (max-width:480px){
-  .raitec-photos-row, .raitec-photo-label-row{ grid-template-columns:1fr; }
-}
