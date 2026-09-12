@@ -15,3 +15,29 @@ html{scroll-behavior:smooth}body{background:var(--rr-bg);color:var(--rr-text)}.w
 .all-services-hero{padding:95px 0 70px;background:radial-gradient(circle at 78% 20%,rgba(20,79,150,.22),transparent 35%),linear-gradient(180deg,#080b0e,#0b1014);border-bottom:1px solid #28323a}.all-services-hero h1{font:clamp(48px,6vw,72px) Oswald,sans-serif;text-transform:uppercase;line-height:1;margin:14px 0}.all-services-hero p{max-width:760px;color:#aeb7bf;font-size:18px;line-height:1.7}.all-services-list{padding:80px 0 110px;background:#080b0e}.all-services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.all-service-group{background:#0d1217;border:1px solid #28333b;padding:30px;position:relative;overflow:hidden}.all-service-group:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#d7a72b,transparent)}.service-index{font:10px 'JetBrains Mono',monospace;letter-spacing:.1em;color:#d7a72b;text-transform:uppercase}.all-service-group h2{font:32px Oswald,sans-serif;text-transform:uppercase;line-height:1.05;margin:12px 0 18px}.all-service-group ul{margin:0 0 20px;padding:0;list-style:none}.all-service-group li{color:#b9c1c8;font-size:14px;line-height:1.55;padding:8px 0;border-bottom:1px solid #202a31}.all-service-group li:last-child{border-bottom:0}.all-service-group li:before{content:'✓';color:#d7a72b;margin-right:9px}.all-service-group a{color:#e3ba52;text-decoration:none;font-size:13px;font-weight:600}.all-services-cta{margin-top:28px;padding:32px;border:1px solid #303b44;background:linear-gradient(135deg,#111820,#0b1014);display:flex;align-items:center;justify-content:space-between;gap:40px}.all-services-cta h2{font:38px Oswald,sans-serif;text-transform:uppercase;margin:12px 0 6px}.all-services-cta p{color:#aab3bb;max-width:700px;margin:0;line-height:1.6}.all-services-cta .cta-stack{min-width:220px}.site-header .nav-links{gap:11px}.footer-brand img{height:66px!important;width:auto!important;max-width:190px;object-fit:contain}
 @media(max-width:1050px){.site-header .nav-links{gap:7px}}
 @media(max-width:760px){.all-services-hero{padding:70px 0 50px}.all-services-hero h1{font-size:48px}.all-services-grid{grid-template-columns:1fr}.all-services-cta{flex-direction:column;align-items:flex-start}.all-services-cta .cta-stack{width:100%}.all-services-cta .btn{width:100%;text-align:center}}
+
+/* Ajuste de proporção das imagens das seções Piscinas / Distribuidor RAITEC */
+.pool-panel-visual img{
+  width:min(540px,100%);
+  max-height:560px;
+}
+.raitec-mini-image{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.raitec-mini-image img{
+  width:min(330px,72%);
+  max-height:360px;
+  object-fit:contain;
+}
+@media(max-width:760px){
+  .pool-panel-visual img{
+    width:min(500px,100%);
+    max-height:520px;
+  }
+  .raitec-mini-image img{
+    width:min(270px,78%);
+    max-height:300px;
+  }
+}
