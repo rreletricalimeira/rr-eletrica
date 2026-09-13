@@ -423,7 +423,7 @@ section{ padding:88px 0; }
     radial-gradient(circle at 30% 20%, rgba(46,134,224,.35), transparent 55%),
     linear-gradient(180deg, #16324d, #0d1e2d);
   padding:36px;
-  display:flex; flex-direction:column; justify-content:center;
+  display:flex; flex-direction:column; justify-content:flex-start;
   border-right:1px solid var(--line);
 }
 .pool-waves{
@@ -434,7 +434,7 @@ section{ padding:88px 0; }
 .pool-visual .badge{
   position:relative;
   font-family:var(--font-mono);
-  font-size:.72rem;
+  font-size:.78rem;
   letter-spacing:.06em;
   color:var(--blue);
   border:1px solid rgba(46,134,224,.4);
@@ -444,8 +444,8 @@ section{ padding:88px 0; }
   width:fit-content;
   margin-bottom:16px;
 }
-.pool-visual h3{ position:relative; font-size:1.6rem; color:#fff; margin-bottom:10px;}
-.pool-visual p{ position:relative; color:#b9d3e8; margin:0; font-size:.95rem; }
+.pool-visual h3{ position:relative; font-size:2rem; line-height:1.15; color:#fff; margin-bottom:12px;}
+.pool-visual p{ position:relative; color:#b9d3e8; margin:0; font-size:1.08rem; max-width:34ch; }
 
 .pool-copy{ padding:36px 40px; }
 .pool-copy ul{ list-style:none; margin:22px 0 26px; padding:0; display:grid; gap:14px; }
@@ -952,11 +952,12 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 
 /* Foto real no bloco "Especialidade Raitec" (antes era um SVG) */
 .pool-visual-photo{
-  margin-top:20px;
+  margin-top:22px;
   border-radius:12px;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.08);
-  max-height:170px;
+  aspect-ratio:3/2;
+  flex:1;
 }
 .pool-visual-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 
@@ -1122,25 +1123,12 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 }
 .raitec-photo-cell:last-child{ border-right:none; }
 .raitec-photo-card{
-  background:
-    linear-gradient(180deg, rgba(6,10,14,.55), rgba(6,10,14,.72)),
-    url("assets/raitec/panel-bg.svg") center/cover no-repeat;
-  padding:22px;
-  display:flex; align-items:center; justify-content:center;
-  aspect-ratio:4/3;
+  aspect-ratio:6/5;
+  overflow:hidden;
   cursor:zoom-in;
 }
-.raitec-photo-card img{ max-width:100%; max-height:100%; object-fit:contain; display:block; }
-.raitec-photo-label{
-  text-align:center;
-  font-family:var(--font-mono);
-  font-size:.72rem;
-  letter-spacing:.06em;
-  color:var(--text-faint);
-  text-transform:uppercase;
-  padding:10px 8px;
-  border-top:1px solid var(--line);
-}
+.raitec-photo-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+.raitec-photo-label{ display:none; }
 
 .compare-table-wrap{ width:100%; }
 .compare-table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:.9rem; }
@@ -1158,18 +1146,6 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 }
 .compare-table tr.row-split td:last-child{ border-right:none; }
 
-.raitec-encomenda-photo{
-  max-width:340px;
-  margin:0 auto 8px;
-  background:
-    linear-gradient(180deg, rgba(6,10,14,.55), rgba(6,10,14,.72)),
-    url("assets/raitec/panel-bg.svg") center/cover no-repeat;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:22px;
-  cursor:zoom-in;
-}
-.raitec-encomenda-photo img{ width:100%; height:auto; display:block; }
 .raitec-encomenda-copy{
   max-width:680px; margin:0 auto 26px; text-align:center;
   color:var(--text-dim); font-size:.96rem;
