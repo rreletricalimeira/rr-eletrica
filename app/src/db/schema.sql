@@ -142,6 +142,29 @@ CREATE TABLE IF NOT EXISTS os_itens (
   valor_venda_total   REAL    -- valor_venda_unit * quantidade
 );
 
+-- Um Orçamento pode ter vários serviços (cada um com sua própria descrição
+-- e valor de mão de obra) e cada serviço pode ter vários produtos. A OS
+-- "normal" continua usando valor_mao_obra + os_itens direto, sem esse nível
+-- extra. valor_mao_obra e valor_produtos em "os" são recalculados a partir
+-- daqui quando tipo_registro = 'Orçamento'.
+CREATE TABLE IF NOT EXISTS os_servicos (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  os_id          INTEGER NOT NULL REFERENCES os(id),
+  descricao      TEXT,
+  valor_servico  REAL DEFAULT 0,
+  ordem          INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS os_servico_itens (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  servico_id          INTEGER NOT NULL REFERENCES os_servicos(id),
+  produto_id          INTEGER REFERENCES produtos(id),
+  quantidade          REAL NOT NULL DEFAULT 1,
+  valor_custo_unit    REAL,
+  valor_venda_unit    REAL,
+  valor_venda_total   REAL
+);
+
 CREATE TABLE IF NOT EXISTS financeiro (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
   tipo             TEXT NOT NULL,   -- Entrada / Saida
