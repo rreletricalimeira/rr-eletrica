@@ -80,8 +80,18 @@ export function renderOS(container) {
           </select>
         </div>
 
-        <label>Valor Mão de Obra (R$)</label>
-        <input id="f-mao-obra" type="number" step="0.01" value="${val(os.valor_mao_obra)}" />
+        <div id="bloco-mao-obra-os" style="display:${tipoAtual === 'OS' ? 'block' : 'none'}">
+          <label>Valor Mão de Obra (R$)</label>
+          <input id="f-mao-obra" type="number" step="0.01" value="${val(os.valor_mao_obra)}" />
+        </div>
+
+        <div id="bloco-resumo-orcamento" class="card" style="display:${tipoAtual === 'Orçamento' ? 'block' : 'none'}">
+          <p class="item-sub">Valor de serviços: <strong id="resumo-valor-servicos">${formatarMoeda(os.valor_mao_obra)}</strong></p>
+          <p class="item-sub">Valor de produtos: <strong id="resumo-valor-produtos">${formatarMoeda(os.valor_produtos)}</strong></p>
+          <p class="item-sub">Juros: <strong id="resumo-valor-juros">${formatarMoeda(os.valor_juros)}</strong></p>
+          <p class="item-sub">Valor total geral: <strong id="resumo-valor-total-geral">${formatarMoeda((os.valor_total || 0) + (os.valor_juros || 0))}</strong></p>
+          ${!id ? '<p class="item-sub"><em>Salve o orçamento para começar a adicionar serviços.</em></p>' : ''}
+        </div>
 
         <label>Forma de Pagamento</label>
         <select id="f-forma-pagamento">
@@ -141,7 +151,10 @@ export function renderOS(container) {
     // Orçamento não gera pagamento, então o campo de status de pagamento
     // some enquanto o tipo estiver como Orçamento e reaparece ao virar OS.
     formWrap.querySelector('#f-tipo-registro').addEventListener('change', (e) => {
-      formWrap.querySelector('#bloco-status-pagamento').style.display = e.target.value === 'OS' ? 'block' : 'none';
+      const ehOS = e.target.value === 'OS';
+      formWrap.querySelector('#bloco-status-pagamento').style.display = ehOS ? 'block' : 'none';
+      formWrap.querySelector('#bloco-mao-obra-os').style.display = ehOS ? 'block' : 'none';
+      formWrap.querySelector('#bloco-resumo-orcamento').style.display = ehOS ? 'none' : 'block';
     });
 
     formWrap.querySelector('#btn-cancelar-os').addEventListener('click', () => { formWrap.innerHTML = ''; });
@@ -159,12 +172,24 @@ export function renderOS(container) {
       const status_pagamento = tipo_registro === 'OS' ? formWrap.querySelector('#f-status-pagamento').value : 'Pendente';
       const forma_pagamento = formWrap.querySelector('#f-forma-pagamento').value;
       const parcelas = numOuNull(formWrap.querySelector('#f-parcelas')?.value);
-      const valor_mao_obra = Number(formWrap.querySelector('#f-mao-obra').value) || 0;
       const conta_caixa_id = numOuNull(formWrap.querySelector('#f-conta-caixa').value);
 
-      // valor_produtos vem sempre da soma dos itens já salvos (0 se OS nova ainda sem itens)
-      const somaItens = id ? all('SELECT COALESCE(SUM(valor_venda_total),0) as soma FROM os_itens WHERE os_id = ?', [id])[0].soma : 0;
-      const valor_produtos = somaItens;
+      // Orçamento: valor_mao_obra e valor_produtos vêm sempre da soma das
+      // tabelas filhas (os_servicos / os_servico_itens), nunca de um campo
+      // digitado. OS: continua com o campo "Valor Mão de Obra" + soma de
+      // os_itens, como sempre foi.
+      let valor_mao_obra, valor_produtos;
+      if (tipo_registro === 'Orçamento') {
+        valor_mao_obra = id ? all('SELECT COALESCE(SUM(valor_servico),0) as soma FROM os_servicos WHERE os_id = ?', [id])[0].soma : 0;
+        valor_produtos = id ? all(`
+          SELECT COALESCE(SUM(si.valor_venda_total),0) as soma
+          FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
+          WHERE s.os_id = ?
+        `, [id])[0].soma : 0;
+      } else {
+        valor_mao_obra = Number(formWrap.querySelector('#f-mao-obra').value) || 0;
+        valor_produtos = id ? all('SELECT COALESCE(SUM(valor_venda_total),0) as soma FROM os_itens WHERE os_id = ?', [id])[0].soma : 0;
+      }
 
       let valor_juros = 0;
       if (forma_pagamento === 'Cartão de Crédito' && parcelas) {
@@ -223,8 +248,10 @@ export function renderOS(container) {
 
     if (id) {
       formWrap.querySelector('#btn-excluir-os').addEventListener('click', async () => {
-        if (!confirm('Excluir esta OS? Os itens vinculados também serão removidos (o estoque não é devolvido automaticamente).')) return;
+        if (!confirm('Excluir este registro? Os itens/serviços vinculados também serão removidos (o estoque não é devolvido automaticamente).')) return;
         run('DELETE FROM os_itens WHERE os_id = ?', [id]);
+        run('DELETE FROM os_servico_itens WHERE servico_id IN (SELECT id FROM os_servicos WHERE os_id = ?)', [id]);
+        run('DELETE FROM os_servicos WHERE os_id = ?', [id]);
         run('DELETE FROM os WHERE id = ?', [id]);
         await persist();
         formWrap.innerHTML = '';
@@ -233,7 +260,11 @@ export function renderOS(container) {
 
       formWrap.querySelector('#btn-exportar-pdf').addEventListener('click', () => exportarPdf(id));
 
-      renderSecaoItens(id);
+      if (tipoAtual === 'Orçamento') {
+        renderSecaoServicos(id);
+      } else {
+        renderSecaoItens(id);
+      }
       renderSecaoResumo(id);
     }
   }
@@ -331,12 +362,204 @@ export function renderOS(container) {
     run('UPDATE os SET valor_produtos = ?, valor_total = ? WHERE id = ?', [soma, total, osId]);
   }
 
+  // ---------- Serviços do Orçamento (cada serviço com seus próprios produtos) ----------
+
+  function renderSecaoServicos(osId) {
+    const secao = formWrap.querySelector('#secao-itens');
+    const servicos = all('SELECT * FROM os_servicos WHERE os_id = ? ORDER BY ordem, id', [osId]);
+
+    secao.innerHTML = `
+      <h3>Serviços</h3>
+      ${servicos.map((s) => renderServicoCardHtml(s)).join('') || '<p class="item-sub"><em>Nenhum serviço adicionado</em></p>'}
+      <div class="linha-dupla">
+        <input id="novo-servico-desc" placeholder="Descrição do serviço" />
+        <input id="novo-servico-valor" type="number" step="0.01" min="0" placeholder="Valor (R$)" style="max-width:120px" />
+        <button id="btn-add-servico">+ Adicionar Serviço</button>
+      </div>
+      <p id="servico-erro" class="pin-erro"></p>
+    `;
+
+    secao.querySelectorAll('.card-servico').forEach((card) => {
+      const servicoId = Number(card.dataset.id);
+
+      card.querySelector('.btn-add-produto-servico').addEventListener('click', async () => {
+        const produtoId = Number(card.querySelector('.novo-produto-select').value);
+        const qtd = Number(card.querySelector('.novo-produto-qtd').value);
+        if (!produtoId || !qtd || qtd <= 0) {
+          card.querySelector('.produto-erro').textContent = 'Selecione um produto e uma quantidade válida.';
+          return;
+        }
+        const produto = all('SELECT * FROM produtos WHERE id = ?', [produtoId])[0];
+        const valor_custo_unit = produto.valor_custo || 0;
+        const valor_venda_unit = produto.valor_venda || 0;
+        const valor_venda_total = valor_venda_unit * qtd;
+
+        run(`INSERT INTO os_servico_itens (servico_id, produto_id, quantidade, valor_custo_unit, valor_venda_unit, valor_venda_total)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+          [servicoId, produtoId, qtd, valor_custo_unit, valor_venda_unit, valor_venda_total]);
+
+        if (produto.controle_estoque) {
+          run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual,0) - ? WHERE id = ?', [qtd, produtoId]);
+        }
+
+        recalcularOrcamento(osId);
+        await persist();
+        renderSecaoServicos(osId);
+        renderSecaoResumo(osId);
+        atualizarResumoTopoOrcamento(osId);
+        renderLista();
+      });
+
+      card.querySelectorAll('.btn-remover-produto-servico').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const itemId = Number(btn.dataset.id);
+          const item = all('SELECT * FROM os_servico_itens WHERE id = ?', [itemId])[0];
+          if (item.produto_id) {
+            const produto = all('SELECT id, controle_estoque, estoque_atual FROM produtos WHERE id = ?', [item.produto_id])[0];
+            if (produto && produto.controle_estoque) {
+              run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual,0) + ? WHERE id = ?', [item.quantidade, produto.id]);
+            }
+          }
+          run('DELETE FROM os_servico_itens WHERE id = ?', [itemId]);
+          recalcularOrcamento(osId);
+          await persist();
+          renderSecaoServicos(osId);
+          renderSecaoResumo(osId);
+          atualizarResumoTopoOrcamento(osId);
+          renderLista();
+        });
+      });
+
+      card.querySelector('.btn-remover-servico').addEventListener('click', async () => {
+        if (!confirm('Remover este serviço e todos os produtos vinculados a ele?')) return;
+        const itens = all('SELECT * FROM os_servico_itens WHERE servico_id = ?', [servicoId]);
+        itens.forEach((item) => {
+          if (item.produto_id) {
+            const produto = all('SELECT id, controle_estoque FROM produtos WHERE id = ?', [item.produto_id])[0];
+            if (produto && produto.controle_estoque) {
+              run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual,0) + ? WHERE id = ?', [item.quantidade, produto.id]);
+            }
+          }
+        });
+        run('DELETE FROM os_servico_itens WHERE servico_id = ?', [servicoId]);
+        run('DELETE FROM os_servicos WHERE id = ?', [servicoId]);
+        recalcularOrcamento(osId);
+        await persist();
+        renderSecaoServicos(osId);
+        renderSecaoResumo(osId);
+        atualizarResumoTopoOrcamento(osId);
+        renderLista();
+      });
+    });
+
+    secao.querySelector('#btn-add-servico').addEventListener('click', async () => {
+      const descricao = secao.querySelector('#novo-servico-desc').value.trim();
+      const valor = Number(secao.querySelector('#novo-servico-valor').value) || 0;
+      if (!descricao) {
+        secao.querySelector('#servico-erro').textContent = 'Informe uma descrição para o serviço.';
+        return;
+      }
+      run('INSERT INTO os_servicos (os_id, descricao, valor_servico, ordem) VALUES (?, ?, ?, ?)', [osId, descricao, valor, servicos.length]);
+      recalcularOrcamento(osId);
+      await persist();
+      renderSecaoServicos(osId);
+      renderSecaoResumo(osId);
+      atualizarResumoTopoOrcamento(osId);
+      renderLista();
+    });
+  }
+
+  function renderServicoCardHtml(s) {
+    const itens = all(`
+      SELECT si.id, si.quantidade, si.valor_venda_unit, si.valor_venda_total, p.descricao
+      FROM os_servico_itens si LEFT JOIN produtos p ON p.id = si.produto_id
+      WHERE si.servico_id = ?
+    `, [s.id]);
+    const subtotalProdutos = itens.reduce((acc, it) => acc + (it.valor_venda_total || 0), 0);
+
+    return `
+      <div class="card card-servico" data-id="${s.id}" style="margin-bottom:12px">
+        <div class="item-principal">
+          <strong>${escapeHtml(s.descricao || 'Serviço')}</strong>
+          <span class="item-sub">Mão de obra: ${formatarMoeda(s.valor_servico)} · Produtos: ${formatarMoeda(subtotalProdutos)}</span>
+        </div>
+        <button class="btn-remover-servico secondary">Remover serviço</button>
+
+        <ul class="lista">
+          ${itens.map((it) => `
+            <li data-id="${it.id}">
+              <div class="item-principal">
+                <strong>${escapeHtml(it.descricao || 'Produto')}</strong>
+                <span class="item-sub">Qtd: ${it.quantidade} · Unit: ${formatarMoeda(it.valor_venda_unit)} · Total: ${formatarMoeda(it.valor_venda_total)}</span>
+              </div>
+              <button class="btn-remover-produto-servico" data-id="${it.id}">Remover</button>
+            </li>
+          `).join('') || '<li><em>Nenhum produto neste serviço</em></li>'}
+        </ul>
+
+        <div class="linha-dupla">
+          <select class="novo-produto-select">
+            <option value="">Selecione um produto</option>
+            ${all('SELECT id, descricao FROM produtos WHERE descontinuado = 0 ORDER BY descricao').map((p) =>
+              `<option value="${p.id}">${escapeHtml(p.descricao)}</option>`
+            ).join('')}
+          </select>
+          <input class="novo-produto-qtd" type="number" step="0.01" min="0.01" value="1" style="max-width:90px" />
+          <button class="btn-add-produto-servico">+ Adicionar Produto</button>
+        </div>
+        <p class="produto-erro pin-erro"></p>
+      </div>
+    `;
+  }
+
+  // Recalcula valor_mao_obra (soma dos serviços), valor_produtos (soma dos
+  // produtos de todos os serviços) e valor_juros (com base na forma de
+  // pagamento/parcelas já salvas na OS) sempre que um serviço ou produto
+  // filho é adicionado/removido — mantém a OS e o PDF sempre corretos, sem
+  // precisar reabrir/salvar o formulário principal.
+  function recalcularOrcamento(osId) {
+    const somaServicos = all('SELECT COALESCE(SUM(valor_servico),0) as soma FROM os_servicos WHERE os_id = ?', [osId])[0].soma;
+    const somaProdutos = all(`
+      SELECT COALESCE(SUM(si.valor_venda_total),0) as soma
+      FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
+      WHERE s.os_id = ?
+    `, [osId])[0].soma;
+
+    const osAtual = all('SELECT forma_pagamento, parcelas FROM os WHERE id = ?', [osId])[0];
+    let valor_juros = 0;
+    if (osAtual.forma_pagamento === 'Cartão de Crédito' && osAtual.parcelas) {
+      const taxa = all('SELECT taxa_percentual FROM taxas_cartao WHERE parcelas = ?', [osAtual.parcelas])[0];
+      if (taxa) valor_juros = (somaServicos + somaProdutos) * (taxa.taxa_percentual / 100);
+    }
+
+    const valor_total = somaServicos + somaProdutos;
+    run('UPDATE os SET valor_mao_obra = ?, valor_produtos = ?, valor_total = ?, valor_juros = ? WHERE id = ?',
+      [somaServicos, somaProdutos, valor_total, valor_juros, osId]);
+  }
+
+  function atualizarResumoTopoOrcamento(osId) {
+    const bloco = formWrap.querySelector('#bloco-resumo-orcamento');
+    if (!bloco) return;
+    const os = all('SELECT valor_mao_obra, valor_produtos, valor_juros, valor_total FROM os WHERE id = ?', [osId])[0];
+    bloco.querySelector('#resumo-valor-servicos').textContent = formatarMoeda(os.valor_mao_obra);
+    bloco.querySelector('#resumo-valor-produtos').textContent = formatarMoeda(os.valor_produtos);
+    bloco.querySelector('#resumo-valor-juros').textContent = formatarMoeda(os.valor_juros);
+    bloco.querySelector('#resumo-valor-total-geral').textContent = formatarMoeda((os.valor_total || 0) + (os.valor_juros || 0));
+  }
+
   // ---------- Resumo financeiro interno (nunca vai pro PDF do cliente) ----------
 
   function renderSecaoResumo(osId) {
     const secao = formWrap.querySelector('#secao-resumo');
     const os = all('SELECT * FROM os WHERE id = ?', [osId])[0];
-    const itens = all('SELECT * FROM os_itens WHERE os_id = ?', [osId]);
+    const ehOrcamento = (os.tipo_registro || 'OS') === 'Orçamento';
+    const itens = ehOrcamento
+      ? all(`
+          SELECT si.quantidade, si.valor_custo_unit, si.valor_venda_unit
+          FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
+          WHERE s.os_id = ?
+        `, [osId])
+      : all('SELECT * FROM os_itens WHERE os_id = ?', [osId]);
 
     const gastosProdutos = itens.reduce((acc, it) => acc + (it.valor_custo_unit || 0) * it.quantidade, 0);
     const lucroProdutos = itens.reduce((acc, it) => acc + ((it.valor_venda_unit || 0) - (it.valor_custo_unit || 0)) * it.quantidade, 0);
@@ -490,27 +713,73 @@ export function renderOS(container) {
       doc.text(linhas, 14, y); y += linhas.length * 5.5 + 4;
     }
 
-    // ---------- Tabela de produtos ----------
-    const linhasProdutos = modo === 'detalhado'
-      ? itens.map((it, i) => [
-          String(i + 1),
-          it.descricao || '-',
-          String(it.quantidade),
-          formatarMoeda(it.valor_venda_unit),
-          formatarMoeda(it.valor_venda_total),
-        ])
-      : (os.valor_produtos ? [['1', nomeResumo, '-', '-', formatarMoeda(os.valor_produtos)]] : []);
+    // ---------- Tabela de produtos / serviços ----------
+    const ehOrcamentoPdf = (os.tipo_registro || 'OS') === 'Orçamento';
 
-    if (linhasProdutos.length) {
-      doc.autoTable({
-        startY: y,
-        head: [['Item', 'Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
-        body: linhasProdutos,
-        theme: 'grid',
-        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
-        columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 30 }, 4: { cellWidth: 30 } },
+    if (ehOrcamentoPdf) {
+      const servicos = all('SELECT * FROM os_servicos WHERE os_id = ? ORDER BY ordem, id', [osId]);
+      servicos.forEach((s, idx) => {
+        const itensServico = all(`
+          SELECT si.quantidade, si.valor_venda_unit, si.valor_venda_total, p.descricao
+          FROM os_servico_itens si LEFT JOIN produtos p ON p.id = si.produto_id
+          WHERE si.servico_id = ?
+        `, [s.id]);
+        const subtotalProdutosServico = itensServico.reduce((acc, it) => acc + (it.valor_venda_total || 0), 0);
+        const subtotalServico = (s.valor_servico || 0) + subtotalProdutosServico;
+
+        if (y > 250) { doc.addPage(); y = 20; }
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${idx + 1}. ${s.descricao || 'Serviço'}`, 14, y);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        y += 6;
+
+        if (modo === 'detalhado' && itensServico.length) {
+          doc.autoTable({
+            startY: y,
+            head: [['Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
+            body: itensServico.map((it) => [
+              it.descricao || '-',
+              String(it.quantidade),
+              formatarMoeda(it.valor_venda_unit),
+              formatarMoeda(it.valor_venda_total),
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
+            margin: { left: 14, right: 14 },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        doc.setFont(undefined, 'bold');
+        doc.text(`Subtotal do serviço: ${formatarMoeda(subtotalServico)}`, larguraPagina - 14, y, { align: 'right' });
+        doc.setFont(undefined, 'normal');
+        y += 9;
       });
-      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      const linhasProdutos = modo === 'detalhado'
+        ? itens.map((it, i) => [
+            String(i + 1),
+            it.descricao || '-',
+            String(it.quantidade),
+            formatarMoeda(it.valor_venda_unit),
+            formatarMoeda(it.valor_venda_total),
+          ])
+        : (os.valor_produtos ? [['1', nomeResumo, '-', '-', formatarMoeda(os.valor_produtos)]] : []);
+
+      if (linhasProdutos.length) {
+        doc.autoTable({
+          startY: y,
+          head: [['Item', 'Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
+          body: linhasProdutos,
+          theme: 'grid',
+          headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
+          columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 30 }, 4: { cellWidth: 30 } },
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
     }
 
     // ---------- Totais ----------
