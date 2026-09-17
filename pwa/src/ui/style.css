@@ -418,3 +418,72 @@ h4 {
   cursor: pointer;
   padding: 4px;
 }
+
+/* ---------- Laudos: alinhamento responsivo dos campos ---------- */
+.laudo-equipamentos > .subcard,
+.laudo-nao-conformidades > .subcard {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.laudo-equipamentos .subcard,
+.laudo-nao-conformidades .subcard {
+  width: 100%;
+}
+
+/* Evita que textos longos ou campos internos estourem a largura disponível. */
+.form-card .campo,
+.form-card input,
+.form-card select,
+.form-card textarea,
+.form-card .subcard {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* No celular, cada campo ocupa uma linha inteira e mantém label/campo juntos. */
+@media (max-width: 719px) {
+  main { padding: 10px; }
+  .card { padding: 12px; }
+
+  .form-card {
+    display: block;
+  }
+
+  .form-card .campo {
+    width: 100%;
+  }
+
+  .form-card .campo + .campo {
+    margin-top: 10px;
+  }
+
+  .subcard-titulo {
+    flex-wrap: wrap;
+  }
+
+  .subcard-titulo input {
+    width: 100%;
+    max-width: none !important;
+  }
+}
+
+/* No PC, mantém os campos distribuídos uniformemente em colunas. */
+@media (min-width: 720px) {
+  .laudo-equipamentos,
+  .laudo-nao-conformidades {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .laudo-equipamentos > .subcard,
+  .laudo-nao-conformidades > .subcard {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .laudo-equipamentos,
+  .laudo-nao-conformidades {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

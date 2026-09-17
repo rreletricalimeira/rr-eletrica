@@ -47,7 +47,6 @@ const AMBIENTE_ITEMS = [
 ];
 
 function novaBomba(n) { return { nome: `Bomba/Motor ${n}`, itens: {}, inversor: {} }; }
-function novoMotorMedicao(n) { return { nome: `Motor ${n}`, corrente: '', temperatura: '' }; }
 function novaNaoConformidade() { return { descricao: '', norma: '', risco: 'Baixo', recomendacao: '' }; }
 function novaFoto() { return { dataUrl: null, legenda: '' }; }
 
@@ -61,7 +60,6 @@ function dadosPadrao() {
       tensaoF12: '', tensaoF23: '', tensaoF31: '',
       tensaoFN1: '', tensaoFN2: '', tensaoFN3: '',
       resistenciaAterramento: '', tempoDR: '',
-      motores: [novoMotorMedicao(1)],
     },
     naoConformidades: [novaNaoConformidade()],
   };
@@ -173,7 +171,7 @@ export function renderLaudos(container) {
         ${renderChecklist(PAINEL_ITEMS, dados.painel, 'painel')}
       </div>
 
-      <div class="card">
+      <div class="card form-card laudo-equipamentos">
         <h3>Motores, Bombas e Inversores de Frequência</h3>
         <p class="item-sub">A casa de máquinas pode ter uma ou mais bombas — adicione um bloco para cada conjunto motor-bomba (com seu respectivo inversor, se houver).</p>
         <div id="lista-bombas"></div>
@@ -203,14 +201,7 @@ export function renderLaudos(container) {
         <input id="m-dr" type="text" value="${val(dados.medicoes.tempoDR)}" />
       </div>
 
-      <div class="card">
-        <h3>Medições por Motor</h3>
-        <p class="item-sub">Pode haver um ou mais motores — adicione um bloco de medição para cada um.</p>
-        <div id="lista-motores"></div>
-        <button type="button" id="btn-add-motor" class="secondary">+ Adicionar motor</button>
-      </div>
-
-      <div class="card">
+      <div class="card form-card laudo-nao-conformidades">
         <h3>Não Conformidades Identificadas</h3>
         <div id="lista-nc"></div>
         <button type="button" id="btn-add-nc" class="secondary">+ Adicionar não conformidade</button>
@@ -342,35 +333,6 @@ export function renderLaudos(container) {
       return gatilho + renderChecklist(INVERSOR_ITEMS_DEMAIS, bomba.inversor, `bomba-${idx}-inv`);
     }
 
-    // ---- Medição por motor ----
-    function renderMotoresMedicao() {
-      const wrap = formWrap.querySelector('#lista-motores');
-      wrap.innerHTML = dados.medicoes.motores.map((m, i) => `
-        <div class="subcard form-card" data-idx="${i}">
-          <div class="subcard-titulo campo-full">
-            <input type="text" class="motor-nome" value="${val(m.nome)}" style="max-width:220px" />
-            ${dados.medicoes.motores.length > 1 ? '<button type="button" class="danger btn-remover-motor" style="margin:0">Remover</button>' : ''}
-          </div>
-          <label>Corrente medida (A)</label><input type="text" class="motor-corrente" value="${val(m.corrente)}" />
-          <label>Temperatura de carcaça (°C)</label><input type="text" class="motor-temperatura" value="${val(m.temperatura)}" />
-        </div>
-      `).join('');
-
-      wrap.querySelectorAll('.subcard').forEach((sub) => {
-        const idx = Number(sub.dataset.idx);
-        sub.querySelector('.motor-nome').addEventListener('input', (e) => { dados.medicoes.motores[idx].nome = e.target.value; });
-        sub.querySelector('.motor-corrente').addEventListener('input', (e) => { dados.medicoes.motores[idx].corrente = e.target.value; });
-        sub.querySelector('.motor-temperatura').addEventListener('input', (e) => { dados.medicoes.motores[idx].temperatura = e.target.value; });
-        const btnRemover = sub.querySelector('.btn-remover-motor');
-        if (btnRemover) btnRemover.addEventListener('click', () => { dados.medicoes.motores.splice(idx, 1); renderMotoresMedicao(); });
-      });
-
-      formWrap.querySelector('#btn-add-motor').addEventListener('click', () => {
-        dados.medicoes.motores.push(novoMotorMedicao(dados.medicoes.motores.length + 1));
-        renderMotoresMedicao();
-      });
-    }
-
     // ---- Não conformidades ----
     function renderNaoConformidades() {
       const wrap = formWrap.querySelector('#lista-nc');
@@ -499,7 +461,6 @@ export function renderLaudos(container) {
     formWrap.querySelector('#btn-limpar-ass-cliente').addEventListener('click', () => ctrlAssCli.limpar());
 
     renderBombas();
-    renderMotoresMedicao();
     renderNaoConformidades();
     renderFotos();
 
