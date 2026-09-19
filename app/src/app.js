@@ -69,6 +69,33 @@ async function iniciarApp() {
   new MutationObserver(() => agruparCampos(conteudo))
     .observe(conteudo, { childList: true, subtree: true });
 
+  // ---------- Aviso de dados não salvos ao trocar de página ----------
+  // Marca a página atual como "suja" (tem digitação não salva) sempre que o
+  // usuário mexe em qualquer campo dentro de #conteudo — funciona para
+  // qualquer formulário do ERP ou do Técnico, sem precisar mexer em cada
+  // página. A marca é limpa quando os dados são realmente salvos (evento
+  // disparado pelo persist() em db.js) ou quando o próprio formulário é
+  // cancelado (botões "btn-cancelar..."). irPara() é o único lugar que troca
+  // de rota no app, então é ali que perguntamos antes de descartar.
+  let paginaSuja = false;
+  conteudo.addEventListener('input', () => { paginaSuja = true; });
+  conteudo.addEventListener('change', () => { paginaSuja = true; });
+  conteudo.addEventListener('click', (e) => {
+    const id = e.target && e.target.id;
+    if (id && id.startsWith('btn-cancelar')) paginaSuja = false;
+  });
+  window.addEventListener('rr-dados-salvos', () => { paginaSuja = false; });
+  window.addEventListener('beforeunload', (e) => {
+    if (!paginaSuja) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  function confirmarSairSemSalvar() {
+    if (!paginaSuja) return true;
+    return confirm('Você preencheu dados nesta página e ainda não salvou. Se sair agora, eles serão perdidos. Deseja sair mesmo assim?');
+  }
+
   await initDb();
   statusLine.textContent = 'Banco local pronto.';
 
@@ -80,6 +107,8 @@ async function iniciarApp() {
   // manifest.json (shortcuts) abrirem direto numa das duas verticais.
 
   function irPara(rota) {
+    if (!confirmarSairSemSalvar()) return;
+    paginaSuja = false;
     location.hash = rota;
   }
 
