@@ -75,6 +75,9 @@ async function migrar() {
 export async function persist() {
   const data = db.export();
   await idbSet(IDB_KEY, data);
+  // Avisa o app (ver app.js) que os dados acabaram de ser salvos de verdade,
+  // para liberar o aviso de "alterações não salvas" ao trocar de página.
+  window.dispatchEvent(new Event('rr-dados-salvos'));
   return data;
 }
 
