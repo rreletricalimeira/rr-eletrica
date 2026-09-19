@@ -4,8 +4,6 @@ import {
   getLastBackupTime, setStatusListener, enableAutoBackup, NotConnectedError,
 } from './db/backup.js';
 import { hasPinConfigured, isUnlockedThisSession, renderLockScreen } from './auth-pin.js';
-import { confirmarApp } from './ui/dialogo.js';
-import { produtosAbaixoDoEstoque, abrirAlertaEstoque } from './ui/estoque_alerta.js';
 
 // ---------- Páginas do ERP ----------
 import { renderClientes } from './pages/clientes.js';
@@ -15,9 +13,6 @@ import { renderCategorias } from './pages/categorias.js';
 import { renderUnidades } from './pages/unidades.js';
 import { renderColaboradores } from './pages/colaboradores.js';
 import { renderOS } from './pages/os.js';
-import { renderCompras } from './pages/compras.js';
-import { renderSegmentos } from './pages/segmentos.js';
-import { renderCategoriasFinanceiro } from './pages/categorias_financeiro.js';
 import { renderFinanceiro } from './pages/financeiro.js';
 import { renderTaxasCartao } from './pages/taxas_cartao.js';
 import { renderContasCaixa } from './pages/contas_caixa.js';
@@ -74,38 +69,6 @@ async function iniciarApp() {
   new MutationObserver(() => agruparCampos(conteudo))
     .observe(conteudo, { childList: true, subtree: true });
 
-  // ---------- Aviso de dados não salvos ao trocar de página ----------
-  // Marca a página atual como "suja" (tem digitação não salva) sempre que o
-  // usuário mexe em qualquer campo dentro de #conteudo — funciona para
-  // qualquer formulário do ERP ou do Técnico, sem precisar mexer em cada
-  // página. A marca é limpa quando os dados são realmente salvos (evento
-  // disparado pelo persist() em db.js) ou quando o próprio formulário é
-  // cancelado (botões "btn-cancelar..."). irPara() é o único lugar que troca
-  // de rota no app, então é ali que perguntamos antes de descartar.
-  let paginaSuja = false;
-  conteudo.addEventListener('input', () => { paginaSuja = true; });
-  conteudo.addEventListener('change', () => { paginaSuja = true; });
-  conteudo.addEventListener('click', (e) => {
-    const id = e.target && e.target.id;
-    if (id && id.startsWith('btn-cancelar')) paginaSuja = false;
-  });
-  window.addEventListener('rr-dados-salvos', () => { paginaSuja = false; });
-  window.addEventListener('beforeunload', (e) => {
-    if (!paginaSuja) return;
-    e.preventDefault();
-    e.returnValue = '';
-  });
-
-  // Balão de confirmação no padrão do app (ver ui/dialogo.js), em vez do
-  // confirm() nativo do navegador.
-  async function confirmarSairSemSalvar() {
-    if (!paginaSuja) return true;
-    return confirmarApp(
-      'Você preencheu dados nesta página e ainda não salvou. Se sair agora, eles serão perdidos. Deseja sair mesmo assim?',
-      { titulo: 'Dados não salvos', textoSim: 'Sair mesmo assim', textoNao: 'Continuar editando' },
-    );
-  }
-
   await initDb();
   statusLine.textContent = 'Banco local pronto.';
 
@@ -116,9 +79,7 @@ async function iniciarApp() {
   // A URL usa #/erp/<aba> e #/tecnico/<aba>, o que permite os atalhos do
   // manifest.json (shortcuts) abrirem direto numa das duas verticais.
 
-  async function irPara(rota) {
-    if (!(await confirmarSairSemSalvar())) return;
-    paginaSuja = false;
+  function irPara(rota) {
     location.hash = rota;
   }
 
@@ -165,12 +126,9 @@ async function iniciarApp() {
     clientes: renderClientes,
     fornecedores: renderFornecedores,
     produtos: renderProdutos,
-    compras: renderCompras,
     os: renderOS,
     financeiro: renderFinanceiro,
     categorias: renderCategorias,
-    segmentos: renderSegmentos,
-    categorias_financeiro: renderCategoriasFinanceiro,
     unidades: renderUnidades,
     colaboradores: renderColaboradores,
     taxas_cartao: renderTaxasCartao,
@@ -189,12 +147,9 @@ async function iniciarApp() {
       <button data-tab="clientes">Clientes</button>
       <button data-tab="fornecedores">Fornecedores</button>
       <button data-tab="produtos">Produtos</button>
-      <button data-tab="compras">Compras</button>
       <button data-tab="os">OS</button>
       <button data-tab="financeiro">Financeiro</button>
-      <button data-tab="categorias">Categoria de Produtos</button>
-      <button data-tab="segmentos">Segmentos</button>
-      <button data-tab="categorias_financeiro">Categoria do Financeiro</button>
+      <button data-tab="categorias">Categorias</button>
       <button data-tab="unidades">Unidades</button>
       <button data-tab="colaboradores">Colaboradores</button>
       <button data-tab="taxas_cartao">Taxas Cartão</button>
@@ -211,18 +166,6 @@ async function iniciarApp() {
       });
     });
     paginasErp[abaAtual](conteudo);
-
-    // Alerta de produtos abaixo do estoque mínimo: selo na aba Produtos e,
-    // uma vez por sessão, a janela com a tabela dos produtos.
-    const abaixo = produtosAbaixoDoEstoque();
-    if (abaixo.length) {
-      const abaProdutos = navTabs.querySelector('button[data-tab="produtos"]');
-      abaProdutos.innerHTML = `Produtos <span class="badge-alerta" title="Produtos abaixo do estoque mínimo">⚠ ${abaixo.length}</span>`;
-      if (!sessionStorage.getItem('rr-alerta-estoque-visto')) {
-        sessionStorage.setItem('rr-alerta-estoque-visto', '1');
-        abrirAlertaEstoque({ onVerProdutos: () => irPara('#/erp/produtos') });
-      }
-    }
   }
 
   const paginasTecnico = {

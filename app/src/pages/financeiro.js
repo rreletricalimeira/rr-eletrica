@@ -104,12 +104,7 @@ export function renderFinanceiro(container) {
         <input id="f-valor" type="number" step="0.01" />
 
         <label>Categoria</label>
-        <select id="f-categoria">
-          <option value="">Selecione</option>
-          ${all('SELECT id, categoria FROM categorias_financeiro ORDER BY categoria').map((c) =>
-            `<option value="${c.id}">${escapeHtml(c.categoria)}</option>`
-          ).join('')}
-        </select>
+        <input id="f-categoria" placeholder="Ex: Despesa, Combustível..." />
 
         <label>Caixa</label>
         <select id="f-caixa">
@@ -134,21 +129,13 @@ export function renderFinanceiro(container) {
         formWrap.querySelector('#form-erro').textContent = 'Informe um valor válido.';
         return;
       }
-      // Categoria vem da tabela categorias_financeiro: guardamos o id (vínculo)
-      // e o nome (para a lista continuar legível mesmo se a categoria mudar).
-      const categoriaId = numOuNull(formWrap.querySelector('#f-categoria').value);
-      const categoriaNome = categoriaId
-        ? (all('SELECT categoria FROM categorias_financeiro WHERE id = ?', [categoriaId])[0]?.categoria || '')
-        : '';
-
-      run(`INSERT INTO financeiro (tipo, data, valor_total, categoria, categoria_id, descricao, origem, conta_caixa_id)
-           VALUES (?, ?, ?, ?, ?, ?, 'manual', ?)`,
+      run(`INSERT INTO financeiro (tipo, data, valor_total, categoria, descricao, origem, conta_caixa_id)
+           VALUES (?, ?, ?, ?, ?, 'manual', ?)`,
         [
           formWrap.querySelector('#f-tipo').value,
           formWrap.querySelector('#f-data').value,
           valor,
-          categoriaNome,
-          categoriaId,
+          formWrap.querySelector('#f-categoria').value.trim(),
           formWrap.querySelector('#f-descricao').value.trim(),
           numOuNull(formWrap.querySelector('#f-caixa').value),
         ]);

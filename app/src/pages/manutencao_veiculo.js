@@ -1,5 +1,4 @@
 import { all, run, persist } from '../db/db.js';
-import { obterOuCriarCategoriaFinanceiro } from '../db/lookups.js';
 
 export function renderManutencaoVeiculo(container) {
   container.innerHTML = `
@@ -95,17 +94,11 @@ export function renderManutencaoVeiculo(container) {
             <option value="Manutenção" ${i.tipo === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
           </select>
 
-          <!-- Litros e Tanque cheio são duas células da grade (cada uma um .campo, como os
-               demais campos), assim o label de Litros tem a mesma altura dos outros labels e o
-               input fica alinhado com KM/Tipo. O checkbox alinha com o input, sem empurrar nada. -->
-          <div class="campo" id="bloco-litros" style="display:${tipoAtual === 'Abastecimento' ? 'block' : 'none'}">
+          <div id="bloco-litros" style="display:${tipoAtual === 'Abastecimento' ? 'block' : 'none'}">
             <label>Litros</label>
             <input id="f-litros" type="number" step="0.01" value="${val(i.litros)}" />
-          </div>
 
-          <div class="campo" id="bloco-tanque" style="display:${tipoAtual === 'Abastecimento' ? 'block' : 'none'}">
-            <label aria-hidden="true">&nbsp;</label>
-            <label class="linha-checkbox campo-check"><input id="f-tanque-cheio" type="checkbox" ${i.tanque_cheio ? 'checked' : ''} /> Tanque cheio</label>
+            <label class="linha-checkbox"><input id="f-tanque-cheio" type="checkbox" ${i.tanque_cheio ? 'checked' : ''} /> Tanque cheio</label>
           </div>
 
           <label>Data</label>
@@ -136,9 +129,7 @@ export function renderManutencaoVeiculo(container) {
       `;
 
       formWrap.querySelector('#f-tipo').addEventListener('change', (e) => {
-        const mostrar = e.target.value === 'Abastecimento' ? 'block' : 'none';
-        formWrap.querySelector('#bloco-litros').style.display = mostrar;
-        formWrap.querySelector('#bloco-tanque').style.display = mostrar;
+        formWrap.querySelector('#bloco-litros').style.display = e.target.value === 'Abastecimento' ? 'block' : 'none';
       });
 
       formWrap.querySelector('#btn-cancelar').addEventListener('click', () => { formWrap.innerHTML = ''; });
@@ -172,14 +163,13 @@ export function renderManutencaoVeiculo(container) {
         if (valor && valor > 0) {
           const nomeVeiculo = all('SELECT veiculo FROM veiculos WHERE id = ?', [veiculoId])[0]?.veiculo || '';
           const descFinanceiro = `${tipo} - ${nomeVeiculo}${descricao ? ' - ' + descricao : ''}`;
-          const categoriaFinId = obterOuCriarCategoriaFinanceiro(tipo);
           if (financeiroId) {
-            run('UPDATE financeiro SET data=?, valor_total=?, categoria=?, categoria_id=?, descricao=?, conta_caixa_id=? WHERE id=?',
-              [data, valor, tipo, categoriaFinId, descFinanceiro, conta_caixa_id, financeiroId]);
+            run('UPDATE financeiro SET data=?, valor_total=?, categoria=?, descricao=?, conta_caixa_id=? WHERE id=?',
+              [data, valor, tipo, descFinanceiro, conta_caixa_id, financeiroId]);
           } else {
-            run(`INSERT INTO financeiro (tipo, data, valor_total, categoria, categoria_id, descricao, origem, conta_caixa_id)
-                 VALUES ('Saida', ?, ?, ?, ?, ?, 'automatico', ?)`,
-              [data, valor, tipo, categoriaFinId, descFinanceiro, conta_caixa_id]);
+            run(`INSERT INTO financeiro (tipo, data, valor_total, categoria, descricao, origem, conta_caixa_id)
+                 VALUES ('Saida', ?, ?, ?, ?, 'automatico', ?)`,
+              [data, valor, tipo, descFinanceiro, conta_caixa_id]);
             financeiroId = all('SELECT last_insert_rowid() as id')[0].id;
           }
         }

@@ -286,26 +286,6 @@ h4 {
 .campo-uf { max-width: 80px; }
 .campo-uf input { max-width: 80px; }
 
-/* Linha "Adicionar Serviço": a descrição sempre ocupa a largura toda (fica
-   mais fácil de ler/editar em qualquer tamanho de tela); valor + botão ficam
-   lado a lado quando cabem e quebram para linhas separadas quando o espaço
-   é pequeno (celular ou janela estreita no PC) — sem precisar de um ponto
-   de quebra fixo, o flex-wrap decide sozinho conforme o espaço disponível. */
-.novo-servico-form { margin-top: 10px; }
-.novo-servico-form .linha-valor-botao {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-.novo-servico-form .linha-valor-botao input {
-  flex: 1 1 140px;
-}
-.novo-servico-form .linha-valor-botao button {
-  flex: 1 1 160px;
-  margin: 0;
-}
-
 .foto-preview-img {
   max-width: 120px;
   border: 1px solid var(--border);
@@ -351,24 +331,6 @@ h4 {
 
   .lista li { padding: 8px 10px; }
   .lista li:hover { background: #dceaf7; }
-
-  /* Alguns labels são mais longos e quebram em 2 linhas (ex.: "Resistência
-     de aterramento (Ω) — ref. ≤ 10Ω"), enquanto o campo vizinho na mesma
-     linha da grade tem um label de 1 linha só. Como label+campo formam uma
-     coluna (ver .campo acima), um label de 2 linhas empurra o campo abaixo
-     dele mais para baixo que o campo vizinho — desalinhando a grade mesmo
-     estando as duas células na mesma linha do grid. Reservamos sempre o
-     espaço de 2 linhas e alinhamos o texto embaixo dessa reserva, para que
-     o campo comece sempre na mesma altura, tenha o label 1 ou 2 linhas.
-     (Fora dessa media query, no celular, os campos empilham em coluna única
-     e esse problema não existe — por isso a regra fica só aqui dentro.) */
-  .form-card .campo label,
-  .filtros-financeiro .campo label {
-    display: flex;
-    align-items: flex-end;
-    min-height: 2.8em;
-    line-height: 1.3;
-  }
 }
 
 @media (min-width: 1024px) {
