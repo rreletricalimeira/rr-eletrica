@@ -286,6 +286,26 @@ h4 {
 .campo-uf { max-width: 80px; }
 .campo-uf input { max-width: 80px; }
 
+/* Linha "Adicionar Serviço": a descrição sempre ocupa a largura toda (fica
+   mais fácil de ler/editar em qualquer tamanho de tela); valor + botão ficam
+   lado a lado quando cabem e quebram para linhas separadas quando o espaço
+   é pequeno (celular ou janela estreita no PC) — sem precisar de um ponto
+   de quebra fixo, o flex-wrap decide sozinho conforme o espaço disponível. */
+.novo-servico-form { margin-top: 10px; }
+.novo-servico-form .linha-valor-botao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.novo-servico-form .linha-valor-botao input {
+  flex: 1 1 140px;
+}
+.novo-servico-form .linha-valor-botao button {
+  flex: 1 1 160px;
+  margin: 0;
+}
+
 .foto-preview-img {
   max-width: 120px;
   border: 1px solid var(--border);
