@@ -24,7 +24,11 @@ export function renderFornecedores(container) {
   const formWrap = container.querySelector('#form-fornecedor-wrap');
 
   function renderLista() {
-    const fornecedores = all('SELECT id, nome, segmento, cidade, celular1 FROM fornecedores ORDER BY nome');
+    const fornecedores = all(`
+      SELECT f.id, f.nome, COALESCE(s.segmento, f.segmento) AS segmento, f.cidade, f.celular1
+      FROM fornecedores f LEFT JOIN segmentos s ON s.id = f.segmento_id
+      ORDER BY f.nome
+    `);
     listaEl.innerHTML = fornecedores.map((f) => `
       <li data-id="${f.id}">
         <div class="item-principal">
@@ -56,8 +60,8 @@ export function renderFornecedores(container) {
         <label>Segmento</label>
         <select id="f-segmento">
           <option value="">Selecione</option>
-          ${['Elétrica', 'Automação', 'Segurança eletrônica', 'Hidráulica', 'Produtos para Piscinas'].map((s) =>
-            `<option value="${s}" ${f.segmento === s ? 'selected' : ''}>${s}</option>`
+          ${all('SELECT id, segmento FROM segmentos ORDER BY segmento').map((s) =>
+            `<option value="${s.id}" ${f.segmento_id === s.id ? 'selected' : ''}>${escapeHtml(s.segmento)}</option>`
           ).join('')}
         </select>
 
@@ -141,10 +145,18 @@ export function renderFornecedores(container) {
         return;
       }
 
+      // O segmento vem da tabela segmentos; guardamos o id (vínculo) e também
+      // o nome, para o registro continuar legível mesmo se o segmento for renomeado/apagado.
+      const segmentoId = numOuNull(formWrap.querySelector('#f-segmento').value);
+      const segmentoNome = segmentoId
+        ? (all('SELECT segmento FROM segmentos WHERE id = ?', [segmentoId])[0]?.segmento || '')
+        : '';
+
       const dados = {
         nome,
         contato: formWrap.querySelector('#f-contato').value.trim(),
-        segmento: formWrap.querySelector('#f-segmento').value.trim(),
+        segmento: segmentoNome,
+        segmento_id: segmentoId,
         cep: formWrap.querySelector('#f-cep').value.trim(),
         endereco: formWrap.querySelector('#f-endereco').value.trim(),
         bairro: formWrap.querySelector('#f-bairro').value.trim(),
@@ -164,7 +176,7 @@ export function renderFornecedores(container) {
       };
 
       if (id) {
-        run(`UPDATE fornecedores SET nome=?, contato=?, segmento=?, cep=?, endereco=?, bairro=?, cidade=?, uf=?,
+        run(`UPDATE fornecedores SET nome=?, contato=?, segmento=?, segmento_id=?, cep=?, endereco=?, bairro=?, cidade=?, uf=?,
              fone1=?, celular1=?, celular2=?, email=?, cpf=?, rg=?, cnpj=?, inscricao_estadual=?, inscricao_municipal=?,
              site_rede_social=?, observacao=? WHERE id=?`,
           [...Object.values(dados), id]);
@@ -194,6 +206,7 @@ export function renderFornecedores(container) {
   renderLista();
 }
 
+function numOuNull(v) { return v === '' || v === undefined || v === null ? null : Number(v); }
 function val(v) {
   return v === undefined || v === null ? '' : String(v).replace(/"/g, '&quot;');
 }
