@@ -36,11 +36,25 @@ CREATE TABLE IF NOT EXISTS clientes (
   colaborador_id       INTEGER REFERENCES colaboradores(id)
 );
 
+-- Segmentos de atuação dos fornecedores (lista pré-carregada, editável na aba Segmentos)
+CREATE TABLE IF NOT EXISTS segmentos (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  segmento  TEXT NOT NULL
+);
+
+-- Só pré-carrega quando a tabela está vazia (assim, o que for apagado na aba Segmentos não volta).
+INSERT INTO segmentos (segmento)
+  SELECT v FROM (
+    SELECT 'Elétrica' AS v UNION ALL SELECT 'Automação' UNION ALL SELECT 'Segurança eletrônica'
+    UNION ALL SELECT 'Hidráulica' UNION ALL SELECT 'Produtos para Piscinas'
+  ) WHERE (SELECT COUNT(*) FROM segmentos) = 0;
+
 CREATE TABLE IF NOT EXISTS fornecedores (
   id                   INTEGER PRIMARY KEY AUTOINCREMENT,
   nome                 TEXT NOT NULL,
   contato              TEXT,
-  segmento             TEXT,
+  segmento             TEXT,                 -- nome do segmento (cópia de segmentos.segmento)
+  segmento_id          INTEGER REFERENCES segmentos(id),
   cep                  TEXT,
   endereco             TEXT,
   bairro               TEXT,
@@ -121,10 +135,13 @@ CREATE TABLE IF NOT EXISTS os (
   status_pagamento   TEXT DEFAULT 'Pendente',  -- Pendente / Pago / Parcial
   valor_mao_obra     REAL DEFAULT 0,
   valor_produtos     REAL DEFAULT 0,           -- somado a partir de os_itens
-  valor_total        REAL DEFAULT 0,           -- mao_obra + produtos
+  valor_total        REAL DEFAULT 0,           -- mao_obra + produtos - desconto
   forma_pagamento    TEXT,                     -- Dinheiro / Pix / Cartão de Crédito / Cartão de Débito / Boleto
   parcelas           INTEGER,
   valor_juros        REAL DEFAULT 0,
+  desconto           REAL DEFAULT 0,           -- desconto editável; valor_total já vem com ele abatido
+  endereco           TEXT,                     -- local do serviço (pré-preenchido com o do cliente)
+  telefone           TEXT,
   conta_caixa_id     INTEGER REFERENCES contas_caixa(id),
   data_abertura      TEXT DEFAULT (datetime('now')),
   data_conclusao     TEXT,
@@ -142,6 +159,41 @@ CREATE TABLE IF NOT EXISTS os_itens (
   valor_venda_total   REAL    -- valor_venda_unit * quantidade
 );
 
+-- Um Orçamento pode ter vários serviços (cada um com sua própria descrição
+-- e valor de mão de obra) e cada serviço pode ter vários produtos. A OS
+-- "normal" continua usando valor_mao_obra + os_itens direto, sem esse nível
+-- extra. valor_mao_obra e valor_produtos em "os" são recalculados a partir
+-- daqui quando tipo_registro = 'Orçamento'.
+CREATE TABLE IF NOT EXISTS os_servicos (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  os_id          INTEGER NOT NULL REFERENCES os(id),
+  descricao      TEXT,
+  valor_servico  REAL DEFAULT 0,
+  ordem          INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS os_servico_itens (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  servico_id          INTEGER NOT NULL REFERENCES os_servicos(id),
+  produto_id          INTEGER REFERENCES produtos(id),
+  quantidade          REAL NOT NULL DEFAULT 1,
+  valor_custo_unit    REAL,
+  valor_venda_unit    REAL,
+  valor_venda_total   REAL
+);
+
+-- Categorias dos lançamentos do Financeiro (editável na aba Categoria Financeiro).
+-- As três primeiras são usadas pelos lançamentos automáticos (OS paga e Manutenção/Abastecimento).
+CREATE TABLE IF NOT EXISTS categorias_financeiro (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  categoria  TEXT NOT NULL
+);
+
+INSERT INTO categorias_financeiro (categoria)
+  SELECT v FROM (
+    SELECT 'Mão de obra+Produtos' AS v UNION ALL SELECT 'Abastecimento' UNION ALL SELECT 'Manutenção'
+  ) WHERE (SELECT COUNT(*) FROM categorias_financeiro) = 0;
+
 CREATE TABLE IF NOT EXISTS financeiro (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
   tipo             TEXT NOT NULL,   -- Entrada / Saida
@@ -149,11 +201,39 @@ CREATE TABLE IF NOT EXISTS financeiro (
   valor_servico    REAL DEFAULT 0,
   valor_produtos   REAL DEFAULT 0,
   valor_total      REAL NOT NULL,
-  categoria        TEXT,
+  categoria        TEXT,            -- nome da categoria (cópia de categorias_financeiro.categoria)
+  categoria_id     INTEGER REFERENCES categorias_financeiro(id),
   descricao        TEXT,
   os_id            INTEGER REFERENCES os(id),
   origem           TEXT DEFAULT 'manual',  -- 'automatico' / 'manual'
   conta_caixa_id   INTEGER REFERENCES contas_caixa(id)
+);
+
+-- ============================================================
+-- Módulo Compras
+-- ============================================================
+-- fornecedor_id é opcional: dá para comprar de quem não está cadastrado
+-- (nesse caso só fornecedor_nome é preenchido). Ao salvar uma compra, os
+-- produtos ligados são atualizados (dados + estoque somando a quantidade).
+
+CREATE TABLE IF NOT EXISTS compras (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  data             TEXT DEFAULT (date('now')),
+  fornecedor_id    INTEGER REFERENCES fornecedores(id),
+  fornecedor_nome  TEXT,
+  endereco         TEXT,
+  telefone         TEXT,
+  valor_total      REAL DEFAULT 0,
+  observacao       TEXT
+);
+
+CREATE TABLE IF NOT EXISTS compra_itens (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  compra_id         INTEGER NOT NULL REFERENCES compras(id),
+  produto_id        INTEGER NOT NULL REFERENCES produtos(id),
+  quantidade        REAL NOT NULL DEFAULT 1,
+  valor_custo_unit  REAL,
+  valor_total       REAL
 );
 
 -- ============================================================

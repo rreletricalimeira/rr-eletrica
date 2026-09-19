@@ -3,7 +3,7 @@
 // IMPORTANTE: o número da versão do cache muda a cada atualização de
 // código para forçar o navegador a buscar os arquivos novos.
 
-const CACHE_NAME = 'rr-eletrica-v7';
+const CACHE_NAME = 'rr-eletrica-v8';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,10 @@ const CORE_ASSETS = [
   './src/ui/style.css',
   './src/ui/cep.js',
   './src/ui/image.js',
+  './src/ui/dialogo.js',
+  './src/ui/estoque_alerta.js',
+  './src/db/lookups.js',
+  './icons/logo-rr-completo.png',
   './src/pages/clientes.js',
   './src/pages/fornecedores.js',
   './src/pages/produtos.js',
@@ -24,6 +28,9 @@ const CORE_ASSETS = [
   './src/pages/unidades.js',
   './src/pages/colaboradores.js',
   './src/pages/os.js',
+  './src/pages/compras.js',
+  './src/pages/segmentos.js',
+  './src/pages/categorias_financeiro.js',
   './src/pages/financeiro.js',
   './src/pages/taxas_cartao.js',
   './src/pages/contas_caixa.js',

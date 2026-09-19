@@ -286,6 +286,26 @@ h4 {
 .campo-uf { max-width: 80px; }
 .campo-uf input { max-width: 80px; }
 
+/* Linha "Adicionar Serviço": a descrição sempre ocupa a largura toda (fica
+   mais fácil de ler/editar em qualquer tamanho de tela); valor + botão ficam
+   lado a lado quando cabem e quebram para linhas separadas quando o espaço
+   é pequeno (celular ou janela estreita no PC) — sem precisar de um ponto
+   de quebra fixo, o flex-wrap decide sozinho conforme o espaço disponível. */
+.novo-servico-form { margin-top: 10px; }
+.novo-servico-form .linha-valor-botao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.novo-servico-form .linha-valor-botao input {
+  flex: 1 1 140px;
+}
+.novo-servico-form .linha-valor-botao button {
+  flex: 1 1 160px;
+  margin: 0;
+}
+
 .foto-preview-img {
   max-width: 120px;
   border: 1px solid var(--border);
@@ -331,6 +351,24 @@ h4 {
 
   .lista li { padding: 8px 10px; }
   .lista li:hover { background: #dceaf7; }
+
+  /* Alguns labels são mais longos e quebram em 2 linhas (ex.: "Resistência
+     de aterramento (Ω) — ref. ≤ 10Ω"), enquanto o campo vizinho na mesma
+     linha da grade tem um label de 1 linha só. Como label+campo formam uma
+     coluna (ver .campo acima), um label de 2 linhas empurra o campo abaixo
+     dele mais para baixo que o campo vizinho — desalinhando a grade mesmo
+     estando as duas células na mesma linha do grid. Reservamos sempre o
+     espaço de 2 linhas e alinhamos o texto embaixo dessa reserva, para que
+     o campo comece sempre na mesma altura, tenha o label 1 ou 2 linhas.
+     (Fora dessa media query, no celular, os campos empilham em coluna única
+     e esse problema não existe — por isso a regra fica só aqui dentro.) */
+  .form-card .campo label,
+  .filtros-financeiro .campo label {
+    display: flex;
+    align-items: flex-end;
+    min-height: 2.8em;
+    line-height: 1.3;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -417,4 +455,183 @@ h4 {
   line-height: 1;
   cursor: pointer;
   padding: 4px;
+}
+
+/* =====================================================================
+   Atualização: ajustes de OS, Compras, alerta de estoque, balões
+   ===================================================================== */
+
+/* Altura única para campos de uma linha — assim input, select e botões
+   lado a lado (ex.: "Descrição do serviço" e "Selecione um produto")
+   ficam sempre do mesmo tamanho. (Escopo .app-shell: não afeta a tela do PIN.) */
+:root { --campo-altura: 34px; }
+.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.app-shell select {
+  height: var(--campo-altura);
+}
+
+/* ---------- Grades de campos (label + campo sempre juntos, alinhados no PC) ---------- */
+.grid-campos { display: grid; grid-template-columns: 1fr; column-gap: 16px; }
+.grid-campos .campo { min-width: 0; margin-top: 10px; }
+.grid-campos .campo > label:not(.campo-check) { margin-top: 0; }
+
+@media (min-width: 720px) {
+  .form-card .grid-campos { grid-column: 1 / -1; }
+
+  /* Reserva sempre 2 linhas de label, como nos demais formulários: o campo
+     começa na mesma altura em todas as células, tenha o label 1 ou 2 linhas. */
+  .grid-campos .campo > label:not(.campo-check) {
+    display: flex;
+    align-items: flex-end;
+    min-height: 2.8em;
+    line-height: 1.3;
+  }
+
+  .grid-os-topo      { grid-template-columns: 1fr 1fr; }
+  .grid-os-contato   { grid-template-columns: 2fr 1fr; }
+  .grid-os-valores   { grid-template-columns: 2fr 1fr; }   /* descrição bem mais larga que valores */
+  .grid-os-pagamento { grid-template-columns: repeat(3, 1fr); }
+  .grid-compra-topo  { grid-template-columns: 1fr 2fr 1fr; }
+  .grid-item-compra  { grid-template-columns: repeat(3, 1fr); }
+  .grid-campos .campo-largo { grid-column: span 2; }
+}
+@media (min-width: 1024px) {
+  .grid-os-topo     { grid-template-columns: 1fr 2fr 1fr 1fr; }
+  .grid-item-compra { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Checkbox alinhado com a altura dos inputs vizinhos (Tanque cheio, Controle de estoque) */
+.form-card .campo label.campo-check,
+.grid-campos .campo label.campo-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--campo-altura);
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+/* ---------- OS: descrição (lista de serviços) e quadro de valores ---------- */
+.grid-os-valores .campo { display: flex; flex-direction: column; }
+
+.descricao-servicos {
+  flex: 1;
+  min-height: 120px;
+  padding: 8px 10px;
+  background: var(--card-2);            /* mesma cor do fundo do formulário (não editável) */
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.desc-linha { padding: 3px 0; border-bottom: 1px dotted var(--border); }
+.desc-linha:last-child { border-bottom: none; }
+
+.quadro-valores {
+  --campo-altura: 30px;
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--card-2);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+}
+.quadro-valores .linha-valor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 5px 0;
+}
+.quadro-valores .linha-valor > span {
+  flex: 1 1 auto;
+  text-align: left;                     /* texto à esquerda */
+  font-size: 0.82rem;
+  color: #333;
+}
+.quadro-valores .linha-valor input {
+  flex: 0 0 132px;
+  width: 132px;
+  text-align: right;                    /* valores à direita */
+}
+.valor-readonly {
+  background: #dfe3e8 !important;       /* cinza, não editável */
+  box-shadow: none !important;
+  cursor: default;
+}
+.valor-editavel { background: var(--input-bg); }
+.linha-valor-total > span,
+.linha-valor-total input { font-weight: bold; }
+.linha-valor-total { border-top: 1px solid var(--border); padding-top: 6px; }
+
+/* ---------- Seção Serviços: "Selecione um produto" + Qtd + botão ---------- */
+.linha-add-produto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.linha-add-produto select { flex: 1 1 260px; min-width: 0; }
+.linha-add-produto input  { flex: 0 0 90px; width: 90px; }
+.linha-add-produto button {
+  flex: 0 0 auto;
+  min-width: 190px;
+  height: var(--campo-altura);
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  white-space: nowrap;                  /* texto do botão sem quebra de linha */
+}
+.novo-servico-form .linha-valor-botao input,
+.novo-servico-form .linha-valor-botao button { height: var(--campo-altura); }
+.novo-servico-form .linha-valor-botao button { padding-top: 0; padding-bottom: 0; white-space: nowrap; }
+
+/* ---------- Compras ---------- */
+.item-compra { margin-bottom: 12px; }
+.campo-destaque input { border-color: var(--accent); }
+.total-compra { text-align: right; font-size: 1rem; margin: 12px 0 4px; }
+
+/* ---------- Janelas (modais) no padrão do painel de exportação ---------- */
+.painel-modal {
+  max-width: 1000px;
+  max-height: 92vh;
+  overflow-y: auto;
+  text-align: left;
+  padding: 26px 20px 20px;
+}
+.painel-modal-titulo { margin: 0 0 12px; color: var(--accent); font-size: 1.05rem; }
+.painel-modal-botoes { margin-top: 14px; justify-content: flex-end; }
+.painel-modal-botoes button { flex: 0 0 auto; }
+
+/* Balão de confirmação (ex.: dados não salvos) */
+.painel-confirmacao-icone { font-size: 2rem; line-height: 1; color: #d9a21b; margin-bottom: 6px; }
+.painel-confirmacao-titulo { margin: 0 0 10px; color: var(--accent); font-size: 1.05rem; }
+.painel-confirmacao p { line-height: 1.45; }
+.painel-confirmacao .btn-dialogo-sim { border-color: var(--danger); color: var(--danger); }
+.painel-confirmacao .btn-dialogo-sim:hover { background: var(--danger); color: #ffffff; }
+
+/* ---------- Alerta de estoque baixo ---------- */
+.alerta-estoque { border-left: 4px solid #d9a21b; }
+.alerta-estoque h3 { margin-top: 0; }
+.tabela-scroll { overflow-x: auto; }
+.tabela-alerta { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.tabela-alerta th {
+  background: var(--grid-header);
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+}
+.tabela-alerta td { padding: 6px 8px; border: 1px solid var(--border); background: var(--card); }
+.tabela-alerta tbody tr:nth-child(even) td { background: var(--grid-row-alt); }
+.tabela-alerta .num { text-align: right; white-space: nowrap; }
+.tabela-alerta td.falta { color: var(--danger); font-weight: bold; }
+.badge-alerta {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: #d9a21b;
+  color: #1a1a1a;
+  font-size: 0.7rem;
+  font-weight: bold;
 }

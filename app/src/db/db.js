@@ -70,11 +70,38 @@ async function migrar() {
   if (!colunasOs.includes('tipo_registro')) {
     db.run("ALTER TABLE os ADD COLUMN tipo_registro TEXT DEFAULT 'OS'");
   }
+  if (!colunasOs.includes('desconto')) db.run('ALTER TABLE os ADD COLUMN desconto REAL DEFAULT 0');
+  if (!colunasOs.includes('endereco')) db.run('ALTER TABLE os ADD COLUMN endereco TEXT');
+  if (!colunasOs.includes('telefone')) db.run('ALTER TABLE os ADD COLUMN telefone TEXT');
+
+  // Fornecedores: segmento agora aponta para a tabela segmentos.
+  const colunasForn = all("PRAGMA table_info(fornecedores)").map((c) => c.name);
+  if (!colunasForn.includes('segmento_id')) {
+    db.run('ALTER TABLE fornecedores ADD COLUMN segmento_id INTEGER REFERENCES segmentos(id)');
+  }
+  // Liga o texto que já estava salvo ao registro de mesmo nome (se existir).
+  db.run(`UPDATE fornecedores SET segmento_id = (SELECT s.id FROM segmentos s WHERE s.segmento = fornecedores.segmento)
+          WHERE segmento_id IS NULL AND segmento IS NOT NULL AND segmento <> ''`);
+
+  // Financeiro: categoria agora aponta para a tabela categorias_financeiro.
+  const colunasFin = all("PRAGMA table_info(financeiro)").map((c) => c.name);
+  if (!colunasFin.includes('categoria_id')) {
+    db.run('ALTER TABLE financeiro ADD COLUMN categoria_id INTEGER REFERENCES categorias_financeiro(id)');
+  }
+  db.run(`INSERT INTO categorias_financeiro (categoria)
+          SELECT DISTINCT categoria FROM financeiro
+          WHERE categoria IS NOT NULL AND categoria <> ''
+            AND categoria NOT IN (SELECT categoria FROM categorias_financeiro)`);
+  db.run(`UPDATE financeiro SET categoria_id = (SELECT c.id FROM categorias_financeiro c WHERE c.categoria = financeiro.categoria)
+          WHERE categoria_id IS NULL AND categoria IS NOT NULL AND categoria <> ''`);
 }
 
 export async function persist() {
   const data = db.export();
   await idbSet(IDB_KEY, data);
+  // Avisa o app (ver app.js) que os dados acabaram de ser salvos de verdade,
+  // para liberar o aviso de "alterações não salvas" ao trocar de página.
+  window.dispatchEvent(new Event('rr-dados-salvos'));
   return data;
 }
 
