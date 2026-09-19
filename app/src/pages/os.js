@@ -80,17 +80,12 @@ export function renderOS(container) {
           </select>
         </div>
 
-        <div id="bloco-mao-obra-os" style="display:${tipoAtual === 'OS' ? 'block' : 'none'}">
-          <label>Valor Mão de Obra (R$)</label>
-          <input id="f-mao-obra" type="number" step="0.01" value="${val(os.valor_mao_obra)}" />
-        </div>
-
-        <div id="bloco-resumo-orcamento" class="card" style="display:${tipoAtual === 'Orçamento' ? 'block' : 'none'}">
+        <div id="bloco-resumo-orcamento" class="card">
           <p class="item-sub">Valor de serviços: <strong id="resumo-valor-servicos">${formatarMoeda(os.valor_mao_obra)}</strong></p>
           <p class="item-sub">Valor de produtos: <strong id="resumo-valor-produtos">${formatarMoeda(os.valor_produtos)}</strong></p>
           <p class="item-sub">Juros: <strong id="resumo-valor-juros">${formatarMoeda(os.valor_juros)}</strong></p>
           <p class="item-sub">Valor total geral: <strong id="resumo-valor-total-geral">${formatarMoeda((os.valor_total || 0) + (os.valor_juros || 0))}</strong></p>
-          ${!id ? '<p class="item-sub"><em>Salve o orçamento para começar a adicionar serviços.</em></p>' : ''}
+          ${!id ? '<p class="item-sub"><em>Salve o registro para começar a adicionar serviços.</em></p>' : ''}
         </div>
 
         <label>Forma de Pagamento</label>
@@ -153,8 +148,6 @@ export function renderOS(container) {
     formWrap.querySelector('#f-tipo-registro').addEventListener('change', (e) => {
       const ehOS = e.target.value === 'OS';
       formWrap.querySelector('#bloco-status-pagamento').style.display = ehOS ? 'block' : 'none';
-      formWrap.querySelector('#bloco-mao-obra-os').style.display = ehOS ? 'block' : 'none';
-      formWrap.querySelector('#bloco-resumo-orcamento').style.display = ehOS ? 'none' : 'block';
     });
 
     formWrap.querySelector('#btn-cancelar-os').addEventListener('click', () => { formWrap.innerHTML = ''; });
@@ -174,22 +167,15 @@ export function renderOS(container) {
       const parcelas = numOuNull(formWrap.querySelector('#f-parcelas')?.value);
       const conta_caixa_id = numOuNull(formWrap.querySelector('#f-conta-caixa').value);
 
-      // Orçamento: valor_mao_obra e valor_produtos vêm sempre da soma das
-      // tabelas filhas (os_servicos / os_servico_itens), nunca de um campo
-      // digitado. OS: continua com o campo "Valor Mão de Obra" + soma de
-      // os_itens, como sempre foi.
-      let valor_mao_obra, valor_produtos;
-      if (tipo_registro === 'Orçamento') {
-        valor_mao_obra = id ? all('SELECT COALESCE(SUM(valor_servico),0) as soma FROM os_servicos WHERE os_id = ?', [id])[0].soma : 0;
-        valor_produtos = id ? all(`
-          SELECT COALESCE(SUM(si.valor_venda_total),0) as soma
-          FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
-          WHERE s.os_id = ?
-        `, [id])[0].soma : 0;
-      } else {
-        valor_mao_obra = Number(formWrap.querySelector('#f-mao-obra').value) || 0;
-        valor_produtos = id ? all('SELECT COALESCE(SUM(valor_venda_total),0) as soma FROM os_itens WHERE os_id = ?', [id])[0].soma : 0;
-      }
+      // valor_mao_obra e valor_produtos vêm sempre da soma das tabelas
+      // filhas (os_servicos / os_servico_itens) — vale tanto para OS quanto
+      // para Orçamento, já que os dois usam a mesma seção de Serviços agora.
+      const valor_mao_obra = id ? all('SELECT COALESCE(SUM(valor_servico),0) as soma FROM os_servicos WHERE os_id = ?', [id])[0].soma : 0;
+      const valor_produtos = id ? all(`
+        SELECT COALESCE(SUM(si.valor_venda_total),0) as soma
+        FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
+        WHERE s.os_id = ?
+      `, [id])[0].soma : 0;
 
       let valor_juros = 0;
       if (forma_pagamento === 'Cartão de Crédito' && parcelas) {
@@ -260,109 +246,41 @@ export function renderOS(container) {
 
       formWrap.querySelector('#btn-exportar-pdf').addEventListener('click', () => exportarPdf(id));
 
-      if (tipoAtual === 'Orçamento') {
-        renderSecaoServicos(id);
-      } else {
-        renderSecaoItens(id);
-      }
+      migrarLegadoParaServicos(id);
+      renderSecaoServicos(id);
       renderSecaoResumo(id);
     }
   }
 
-  // ---------- Itens de produto da OS ----------
+  // ---------- Migração de registros antigos (Valor Mão de Obra digitado
+  // direto + produtos em os_itens) para a estrutura de Serviços ----------
+  // Roda toda vez que uma OS/Orçamento existente é aberta, mas só migra de
+  // fato na primeira vez (se já existe algum os_servicos, não faz nada).
+  function migrarLegadoParaServicos(osId) {
+    const jaTemServicos = all('SELECT COUNT(*) as c FROM os_servicos WHERE os_id = ?', [osId])[0].c;
+    if (jaTemServicos > 0) return;
 
-  function renderSecaoItens(osId) {
-    const secao = formWrap.querySelector('#secao-itens');
-    const itens = all(`
-      SELECT oi.id, oi.quantidade, oi.valor_custo_unit, oi.valor_venda_unit, oi.valor_venda_total, p.descricao
-      FROM os_itens oi LEFT JOIN produtos p ON p.id = oi.produto_id
-      WHERE oi.os_id = ?
-    `, [osId]);
-
-    secao.innerHTML = `
-      <h3>Produtos usados</h3>
-      <ul class="lista">
-        ${itens.map((it) => `
-          <li data-id="${it.id}">
-            <div class="item-principal">
-              <strong>${escapeHtml(it.descricao || 'Produto')}</strong>
-              <span class="item-sub">Qtd: ${it.quantidade} · Venda unit: ${formatarMoeda(it.valor_venda_unit)} · Total: ${formatarMoeda(it.valor_venda_total)}</span>
-            </div>
-            <button class="btn-remover-item" data-id="${it.id}" data-produto="${''}">Remover</button>
-          </li>
-        `).join('') || '<li><em>Nenhum produto adicionado</em></li>'}
-      </ul>
-      <div class="linha-dupla">
-        <select id="novo-item-produto">
-          <option value="">Selecione um produto</option>
-          ${all('SELECT id, descricao, valor_venda, valor_custo FROM produtos WHERE descontinuado = 0 ORDER BY descricao').map((p) =>
-            `<option value="${p.id}">${escapeHtml(p.descricao)}</option>`
-          ).join('')}
-        </select>
-        <input id="novo-item-qtd" type="number" step="0.01" min="0.01" value="1" style="max-width:90px" />
-        <button id="btn-add-item">Adicionar</button>
-      </div>
-      <p id="item-erro" class="pin-erro"></p>
-    `;
-
-    secao.querySelectorAll('.btn-remover-item').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const itemId = Number(btn.dataset.id);
-        const item = all('SELECT * FROM os_itens WHERE id = ?', [itemId])[0];
-        // devolve ao estoque, se o produto tiver controle de estoque
-        if (item.produto_id) {
-          const produto = all('SELECT id, controle_estoque, estoque_atual FROM produtos WHERE id = ?', [item.produto_id])[0];
-          if (produto && produto.controle_estoque) {
-            run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual,0) + ? WHERE id = ?', [item.quantidade, produto.id]);
-          }
-        }
-        run('DELETE FROM os_itens WHERE id = ?', [itemId]);
-        await recalcularOs(osId);
-        await persist();
-        renderSecaoItens(osId);
-        renderSecaoResumo(osId);
-        renderLista();
-      });
-    });
-
-    secao.querySelector('#btn-add-item').addEventListener('click', async () => {
-      const produtoId = Number(secao.querySelector('#novo-item-produto').value);
-      const quantidade = Number(secao.querySelector('#novo-item-qtd').value);
-      if (!produtoId || !quantidade || quantidade <= 0) {
-        secao.querySelector('#item-erro').textContent = 'Selecione um produto e uma quantidade válida.';
-        return;
-      }
-
-      const produto = all('SELECT * FROM produtos WHERE id = ?', [produtoId])[0];
-      const valor_custo_unit = produto.valor_custo || 0;
-      const valor_venda_unit = produto.valor_venda || 0;
-      const valor_venda_total = valor_venda_unit * quantidade;
-
-      run(`INSERT INTO os_itens (os_id, produto_id, quantidade, valor_custo_unit, valor_venda_unit, valor_venda_total)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-        [osId, produtoId, quantidade, valor_custo_unit, valor_venda_unit, valor_venda_total]);
-
-      // baixa automática de estoque
-      if (produto.controle_estoque) {
-        run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual,0) - ? WHERE id = ?', [quantidade, produtoId]);
-      }
-
-      await recalcularOs(osId);
-      await persist();
-      renderSecaoItens(osId);
-      renderSecaoResumo(osId);
-      renderLista();
-    });
-  }
-
-  async function recalcularOs(osId) {
-    const soma = all('SELECT COALESCE(SUM(valor_venda_total),0) as soma FROM os_itens WHERE os_id = ?', [osId])[0].soma;
     const osAtual = all('SELECT valor_mao_obra FROM os WHERE id = ?', [osId])[0];
-    const total = (osAtual.valor_mao_obra || 0) + soma;
-    run('UPDATE os SET valor_produtos = ?, valor_total = ? WHERE id = ?', [soma, total, osId]);
+    const itensAntigos = all('SELECT * FROM os_itens WHERE os_id = ?', [osId]);
+    const valorMaoObraAntigo = (osAtual && osAtual.valor_mao_obra) || 0;
+    if (valorMaoObraAntigo === 0 && itensAntigos.length === 0) return; // nada pra migrar
+
+    run('INSERT INTO os_servicos (os_id, descricao, valor_servico, ordem) VALUES (?, ?, ?, 0)',
+      [osId, 'Serviço', valorMaoObraAntigo]);
+    const novoServicoId = all('SELECT last_insert_rowid() as id')[0].id;
+
+    itensAntigos.forEach((it) => {
+      run(`INSERT INTO os_servico_itens (servico_id, produto_id, quantidade, valor_custo_unit, valor_venda_unit, valor_venda_total)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        [novoServicoId, it.produto_id, it.quantidade, it.valor_custo_unit, it.valor_venda_unit, it.valor_venda_total]);
+      run('DELETE FROM os_itens WHERE id = ?', [it.id]);
+    });
+
+    recalcularOrcamento(osId);
+    persist();
   }
 
-  // ---------- Serviços do Orçamento (cada serviço com seus próprios produtos) ----------
+  // ---------- Serviços (cada serviço com seus próprios produtos) — vale tanto para OS quanto para Orçamento ----------
 
   function renderSecaoServicos(osId) {
     const secao = formWrap.querySelector('#secao-itens');
@@ -371,10 +289,12 @@ export function renderOS(container) {
     secao.innerHTML = `
       <h3>Serviços</h3>
       ${servicos.map((s) => renderServicoCardHtml(s)).join('') || '<p class="item-sub"><em>Nenhum serviço adicionado</em></p>'}
-      <div class="linha-dupla">
+      <div class="novo-servico-form">
         <input id="novo-servico-desc" placeholder="Descrição do serviço" />
-        <input id="novo-servico-valor" type="number" step="0.01" min="0" placeholder="Valor (R$)" style="max-width:120px" />
-        <button id="btn-add-servico">+ Adicionar Serviço</button>
+        <div class="linha-valor-botao">
+          <input id="novo-servico-valor" type="number" step="0.01" min="0" placeholder="Valor (R$)" />
+          <button id="btn-add-servico">+ Adicionar Serviço</button>
+        </div>
       </div>
       <p id="servico-erro" class="pin-erro"></p>
     `;
@@ -552,14 +472,11 @@ export function renderOS(container) {
   function renderSecaoResumo(osId) {
     const secao = formWrap.querySelector('#secao-resumo');
     const os = all('SELECT * FROM os WHERE id = ?', [osId])[0];
-    const ehOrcamento = (os.tipo_registro || 'OS') === 'Orçamento';
-    const itens = ehOrcamento
-      ? all(`
-          SELECT si.quantidade, si.valor_custo_unit, si.valor_venda_unit
-          FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
-          WHERE s.os_id = ?
-        `, [osId])
-      : all('SELECT * FROM os_itens WHERE os_id = ?', [osId]);
+    const itens = all(`
+      SELECT si.quantidade, si.valor_custo_unit, si.valor_venda_unit
+      FROM os_servico_itens si JOIN os_servicos s ON s.id = si.servico_id
+      WHERE s.os_id = ?
+    `, [osId]);
 
     const gastosProdutos = itens.reduce((acc, it) => acc + (it.valor_custo_unit || 0) * it.quantidade, 0);
     const lucroProdutos = itens.reduce((acc, it) => acc + ((it.valor_venda_unit || 0) - (it.valor_custo_unit || 0)) * it.quantidade, 0);
@@ -628,23 +545,15 @@ export function renderOS(container) {
 
   function exportarPdf(osId) {
     abrirPainelExportacao(async (modo) => {
-      let nomeResumo = 'Kit de instalação';
-      if (modo === 'resumido') {
-        nomeResumo = prompt('Nome do item resumido:', 'Kit de instalação') || 'Kit de instalação';
-      }
-      await gerarPdf(osId, modo, nomeResumo);
+      await gerarPdf(osId, modo);
     });
   }
 
-  async function gerarPdf(osId, modo, nomeResumo) {
+  async function gerarPdf(osId, modo) {
     const os = all(`
       SELECT os.*, c.nome as cliente_nome, c.endereco, c.bairro, c.cidade, c.uf, c.cep, c.fone1, c.celular1
       FROM os LEFT JOIN clientes c ON c.id = os.cliente_id WHERE os.id = ?
     `, [osId])[0];
-    const itens = all(`
-      SELECT oi.quantidade, oi.valor_venda_unit, oi.valor_venda_total, p.descricao
-      FROM os_itens oi LEFT JOIN produtos p ON p.id = oi.produto_id WHERE oi.os_id = ?
-    `, [osId]);
 
     const tipoLabel = (os.tipo_registro || 'OS') === 'Orçamento' ? 'Orçamento' : 'O.S.';
     const logo = await carregarLogoBase64();
@@ -713,74 +622,48 @@ export function renderOS(container) {
       doc.text(linhas, 14, y); y += linhas.length * 5.5 + 4;
     }
 
-    // ---------- Tabela de produtos / serviços ----------
-    const ehOrcamentoPdf = (os.tipo_registro || 'OS') === 'Orçamento';
+    // ---------- Tabela de serviços e produtos ----------
+    const servicos = all('SELECT * FROM os_servicos WHERE os_id = ? ORDER BY ordem, id', [osId]);
+    servicos.forEach((s, idx) => {
+      const itensServico = all(`
+        SELECT si.quantidade, si.valor_venda_unit, si.valor_venda_total, p.descricao
+        FROM os_servico_itens si LEFT JOIN produtos p ON p.id = si.produto_id
+        WHERE si.servico_id = ?
+      `, [s.id]);
+      const subtotalProdutosServico = itensServico.reduce((acc, it) => acc + (it.valor_venda_total || 0), 0);
+      const subtotalServico = (s.valor_servico || 0) + subtotalProdutosServico;
 
-    if (ehOrcamentoPdf) {
-      const servicos = all('SELECT * FROM os_servicos WHERE os_id = ? ORDER BY ordem, id', [osId]);
-      servicos.forEach((s, idx) => {
-        const itensServico = all(`
-          SELECT si.quantidade, si.valor_venda_unit, si.valor_venda_total, p.descricao
-          FROM os_servico_itens si LEFT JOIN produtos p ON p.id = si.produto_id
-          WHERE si.servico_id = ?
-        `, [s.id]);
-        const subtotalProdutosServico = itensServico.reduce((acc, it) => acc + (it.valor_venda_total || 0), 0);
-        const subtotalServico = (s.valor_servico || 0) + subtotalProdutosServico;
+      if (y > 250) { doc.addPage(); y = 20; }
 
-        if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${idx + 1}. ${s.descricao || 'Serviço'}`, 14, y);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      y += 6;
 
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'bold');
-        doc.text(`${idx + 1}. ${s.descricao || 'Serviço'}`, 14, y);
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(10);
-        y += 6;
-
-        if (modo === 'detalhado' && itensServico.length) {
-          doc.autoTable({
-            startY: y,
-            head: [['Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
-            body: itensServico.map((it) => [
-              it.descricao || '-',
-              String(it.quantidade),
-              formatarMoeda(it.valor_venda_unit),
-              formatarMoeda(it.valor_venda_total),
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
-            margin: { left: 14, right: 14 },
-          });
-          y = doc.lastAutoTable.finalY + 4;
-        }
-
-        doc.setFont(undefined, 'bold');
-        doc.text(`Subtotal do serviço: ${formatarMoeda(subtotalServico)}`, larguraPagina - 14, y, { align: 'right' });
-        doc.setFont(undefined, 'normal');
-        y += 9;
-      });
-    } else {
-      const linhasProdutos = modo === 'detalhado'
-        ? itens.map((it, i) => [
-            String(i + 1),
+      if (modo === 'detalhado' && itensServico.length) {
+        doc.autoTable({
+          startY: y,
+          head: [['Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
+          body: itensServico.map((it) => [
             it.descricao || '-',
             String(it.quantidade),
             formatarMoeda(it.valor_venda_unit),
             formatarMoeda(it.valor_venda_total),
-          ])
-        : (os.valor_produtos ? [['1', nomeResumo, '-', '-', formatarMoeda(os.valor_produtos)]] : []);
-
-      if (linhasProdutos.length) {
-        doc.autoTable({
-          startY: y,
-          head: [['Item', 'Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
-          body: linhasProdutos,
+          ]),
           theme: 'grid',
           headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
-          columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 30 }, 4: { cellWidth: 30 } },
+          margin: { left: 14, right: 14 },
         });
-        y = doc.lastAutoTable.finalY + 8;
+        y = doc.lastAutoTable.finalY + 4;
       }
-    }
+
+      doc.setFont(undefined, 'bold');
+      doc.text(`Subtotal do serviço: ${formatarMoeda(subtotalServico)}`, larguraPagina - 14, y, { align: 'right' });
+      doc.setFont(undefined, 'normal');
+      y += 9;
+    });
 
     // ---------- Totais ----------
     const xTotalLabel = larguraPagina - 90;
