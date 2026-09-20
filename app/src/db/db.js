@@ -83,6 +83,11 @@ async function migrar() {
   db.run(`UPDATE fornecedores SET segmento_id = (SELECT s.id FROM segmentos s WHERE s.segmento = fornecedores.segmento)
           WHERE segmento_id IS NULL AND segmento IS NOT NULL AND segmento <> ''`);
 
+  // Compras: caixa de origem e vínculo com a saída gerada no Financeiro.
+  const colunasCompras = all("PRAGMA table_info(compras)").map((c) => c.name);
+  if (!colunasCompras.includes('conta_caixa_id')) db.run('ALTER TABLE compras ADD COLUMN conta_caixa_id INTEGER REFERENCES contas_caixa(id)');
+  if (!colunasCompras.includes('financeiro_id')) db.run('ALTER TABLE compras ADD COLUMN financeiro_id INTEGER REFERENCES financeiro(id)');
+
   // Financeiro: categoria agora aponta para a tabela categorias_financeiro.
   const colunasFin = all("PRAGMA table_info(financeiro)").map((c) => c.name);
   if (!colunasFin.includes('categoria_id')) {

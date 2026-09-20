@@ -488,7 +488,8 @@ h4 {
   }
 
   .grid-os-topo      { grid-template-columns: 1fr 1fr; }
-  .grid-os-contato   { grid-template-columns: 2fr 1fr; }
+  .grid-os-contato,
+  .grid-compra-endereco { grid-template-columns: 2fr 1fr; }
   .grid-os-valores   { grid-template-columns: 2fr 1fr; }   /* descrição bem mais larga que valores */
   .grid-os-pagamento { grid-template-columns: repeat(3, 1fr); }
   .grid-compra-topo  { grid-template-columns: 1fr 2fr 1fr; }

@@ -1,5 +1,5 @@
 import { all, run, persist } from '../db/db.js';
-import { montarEnderecoEmLinha } from '../db/lookups.js';
+import { montarEnderecoEmLinha, obterOuCriarCategoriaFinanceiro } from '../db/lookups.js';
 import { montarFormProduto } from './produtos.js';
 
 // Compras: cabeçalho (data, fornecedor, endereço, telefone) + tabela filha de
@@ -73,6 +73,14 @@ export function renderCompras(container) {
             <label>Endereço</label>
             <input id="c-endereco" value="${val(c.endereco)}" />
           </div>
+          <div class="campo">
+            <label>Caixa (de onde saiu o pagamento)</label>
+            <select id="c-caixa">
+              <option value="">Selecione</option>
+              ${all('SELECT id, nome FROM contas_caixa ORDER BY nome').map((cx) =>
+                `<option value="${cx.id}" ${c.conta_caixa_id === cx.id ? 'selected' : ''}>${escapeHtml(cx.nome)}</option>`).join('')}
+            </select>
+          </div>
         </div>
 
         <div class="campo campo-full">
@@ -125,13 +133,19 @@ export function renderCompras(container) {
         fornecedor_nome,
         endereco: formWrap.querySelector('#c-endereco').value.trim(),
         telefone: formWrap.querySelector('#c-telefone').value.trim(),
+        conta_caixa_id: numOuNull(formWrap.querySelector('#c-caixa').value),
         observacao: formWrap.querySelector('#c-obs').value.trim(),
       };
 
       // Compra já salva: só o cabeçalho muda (os itens já atualizaram produtos e estoque).
       if (id) {
-        run('UPDATE compras SET data=?, fornecedor_id=?, fornecedor_nome=?, endereco=?, telefone=?, observacao=? WHERE id=?',
-          [cabecalho.data, cabecalho.fornecedor_id, cabecalho.fornecedor_nome, cabecalho.endereco, cabecalho.telefone, cabecalho.observacao, id]);
+        run('UPDATE compras SET data=?, fornecedor_id=?, fornecedor_nome=?, endereco=?, telefone=?, conta_caixa_id=?, observacao=? WHERE id=?',
+          [cabecalho.data, cabecalho.fornecedor_id, cabecalho.fornecedor_nome, cabecalho.endereco, cabecalho.telefone, cabecalho.conta_caixa_id, cabecalho.observacao, id]);
+        // Mantém a saída do Financeiro em sincronia com data, caixa e fornecedor.
+        if (c.financeiro_id) {
+          run('UPDATE financeiro SET data=?, descricao=?, conta_caixa_id=? WHERE id=?',
+            [cabecalho.data, `Compra ${id} - ${cabecalho.fornecedor_nome}`, cabecalho.conta_caixa_id, c.financeiro_id]);
+        }
         await persist();
         renderForm(id);
         renderLista();
@@ -146,10 +160,18 @@ export function renderCompras(container) {
       }
 
       const valor_total = itens.reduce((a, it) => a + it.quantidade * (it.valor_custo || 0), 0);
-      run(`INSERT INTO compras (data, fornecedor_id, fornecedor_nome, endereco, telefone, valor_total, observacao)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [cabecalho.data, cabecalho.fornecedor_id, cabecalho.fornecedor_nome, cabecalho.endereco, cabecalho.telefone, valor_total, cabecalho.observacao]);
+      run(`INSERT INTO compras (data, fornecedor_id, fornecedor_nome, endereco, telefone, conta_caixa_id, valor_total, observacao)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [cabecalho.data, cabecalho.fornecedor_id, cabecalho.fornecedor_nome, cabecalho.endereco, cabecalho.telefone, cabecalho.conta_caixa_id, valor_total, cabecalho.observacao]);
       const compraId = all('SELECT last_insert_rowid() as id')[0].id;
+
+      // Saída automática no Financeiro (categoria "Compras")
+      if (valor_total > 0) {
+        run(`INSERT INTO financeiro (tipo, data, valor_total, categoria, categoria_id, descricao, origem, conta_caixa_id)
+             VALUES ('Saida', ?, ?, 'Compras', ?, ?, 'automatico', ?)`,
+          [cabecalho.data, valor_total, obterOuCriarCategoriaFinanceiro('Compras'), `Compra ${compraId} - ${cabecalho.fornecedor_nome}`, cabecalho.conta_caixa_id]);
+        run('UPDATE compras SET financeiro_id = ? WHERE id = ?', [all('SELECT last_insert_rowid() as id')[0].id, compraId]);
+      }
 
       for (const it of itens) {
         // Atualiza o cadastro do produto com o que foi conferido/ajustado aqui e
@@ -173,12 +195,13 @@ export function renderCompras(container) {
 
     if (id) {
       formWrap.querySelector('#btn-excluir-compra').addEventListener('click', async () => {
-        if (!confirm('Excluir esta compra? A quantidade comprada será descontada do estoque dos produtos com controle de estoque (custo e preço de venda não voltam ao valor anterior).')) return;
+        if (!confirm('Excluir esta compra? A saída correspondente no Financeiro será removida e a quantidade comprada será descontada do estoque dos produtos com controle de estoque (custo e preço de venda não voltam ao valor anterior).')) return;
         all('SELECT ci.produto_id, ci.quantidade FROM compra_itens ci WHERE ci.compra_id = ?', [id]).forEach((it) => {
           run('UPDATE produtos SET estoque_atual = COALESCE(estoque_atual, 0) - ? WHERE id = ? AND controle_estoque = 1', [it.quantidade, it.produto_id]);
         });
         run('DELETE FROM compra_itens WHERE compra_id = ?', [id]);
         run('DELETE FROM compras WHERE id = ?', [id]);
+        if (c.financeiro_id) run('DELETE FROM financeiro WHERE id = ?', [c.financeiro_id]);
         await persist();
         formWrap.innerHTML = '';
         renderLista();

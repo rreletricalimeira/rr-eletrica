@@ -224,6 +224,8 @@ CREATE TABLE IF NOT EXISTS compras (
   endereco         TEXT,
   telefone         TEXT,
   valor_total      REAL DEFAULT 0,
+  conta_caixa_id   INTEGER REFERENCES contas_caixa(id),
+  financeiro_id    INTEGER REFERENCES financeiro(id),  -- saída gerada automaticamente
   observacao       TEXT
 );
 
