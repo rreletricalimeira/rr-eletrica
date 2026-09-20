@@ -1153,3 +1153,78 @@ footer p{ color:var(--text-faint); font-size:.85rem; max-width:34ch; }
 .raitec-encomenda-copy b{ color:var(--text); }
 
 .lightbox-content img{ width:100%; height:auto; display:block; }
+
+/* ---------------------------------------------------------
+   Todos os serviços — accordion (página Sobre)
+   --------------------------------------------------------- */
+.svc-section{ padding:56px 0 40px; }
+.svc-section .section-head{ margin-bottom:28px; }
+.svc-all, .svc-seg{ scroll-margin-top:96px; }
+.svc-all summary, .svc-seg summary{ list-style:none; cursor:pointer; }
+.svc-all summary::-webkit-details-marker, .svc-seg summary::-webkit-details-marker{ display:none; }
+
+.svc-all-toggle{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:var(--grad-brand); color:#1a1206;
+  font-family:var(--font-display); text-transform:uppercase; letter-spacing:.04em;
+  font-size:1.15rem; font-weight:600;
+  padding:18px 24px; border-radius:var(--radius);
+  transition:box-shadow .15s ease;
+}
+.svc-all-toggle:hover{ box-shadow:0 8px 26px -6px rgba(232,73,29,.6); }
+.svc-all-toggle::after{
+  content:""; width:12px; height:12px; flex:none;
+  border-right:3px solid #1a1206; border-bottom:3px solid #1a1206;
+  transform:rotate(45deg) translateY(-3px); transition:transform .2s ease;
+}
+.svc-all[open] > .svc-all-toggle{ border-bottom-left-radius:0; border-bottom-right-radius:0; }
+.svc-all[open] > .svc-all-toggle::after{ transform:rotate(-135deg) translateY(-3px); }
+.svc-all-toggle:focus-visible, .svc-seg summary:focus-visible, .svc-expand:focus-visible{ outline:3px solid var(--yellow); outline-offset:3px; }
+
+.svc-all-panel{
+  background:var(--panel); border:1px solid var(--line); border-top:none;
+  border-radius:0 0 var(--radius) var(--radius); padding:20px;
+}
+.svc-tools{ display:flex; justify-content:flex-end; margin-bottom:14px; }
+.svc-expand{
+  background:transparent; color:var(--text-dim); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:8px 14px; cursor:pointer;
+  font-family:var(--font-mono); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+}
+.svc-expand:hover{ color:var(--orange-1); border-color:var(--orange-1); }
+
+.svc-seg{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:10px; }
+.svc-seg:last-child{ margin-bottom:0; }
+.svc-seg summary{
+  display:flex; align-items:center; gap:14px; padding:16px 20px;
+  font-family:var(--font-display); text-transform:uppercase; letter-spacing:.03em; font-size:1.05rem;
+}
+.svc-seg summary span{ flex:1; }
+.svc-seg summary em{ font-style:normal; font-family:var(--font-mono); font-size:.68rem; letter-spacing:.06em; color:var(--text-faint); }
+.svc-seg summary::after{
+  content:"+"; font-family:var(--font-display); font-size:1.5rem; line-height:1; color:var(--orange-1); width:18px; text-align:center;
+}
+.svc-seg[open] summary::after{ content:"–"; }
+.svc-seg[open] summary{ border-bottom:1px solid var(--line); }
+.svc-seg-body{ padding:22px 20px 20px; }
+
+.svc-groups{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:26px 28px; }
+.svc-group h4{
+  font-family:var(--font-mono); text-transform:uppercase; font-size:.72rem; letter-spacing:.08em;
+  color:var(--orange-1); margin:0 0 10px; padding-bottom:8px; border-bottom:1px solid var(--line);
+}
+.svc-group ul{ list-style:none; margin:0; padding:0; }
+.svc-group li{ position:relative; padding:4px 0 4px 16px; color:var(--text-dim); font-size:.92rem; }
+.svc-group li::before{ content:""; position:absolute; left:0; top:.95em; width:6px; height:2px; background:var(--blue); }
+.svc-page-link{
+  display:inline-block; margin-top:22px; color:var(--text); text-decoration:none;
+  font-family:var(--font-display); text-transform:uppercase; letter-spacing:.04em; font-size:.86rem;
+  border-bottom:1px solid var(--orange-1); padding-bottom:2px;
+}
+.svc-page-link:hover{ color:var(--orange-1); }
+@media (max-width:600px){
+  .svc-all-toggle{ padding:16px 18px; font-size:1.02rem; }
+  .svc-all-panel{ padding:14px; }
+  .svc-seg summary{ padding:14px 16px; }
+  .svc-seg-body{ padding:18px 16px; }
+}

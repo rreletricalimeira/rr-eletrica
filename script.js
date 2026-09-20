@@ -161,6 +161,41 @@ function initLightbox() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 }
 
+function initAllServices() {
+  const all = document.getElementById('todos-servicos');
+  if (!all) return;
+  const segs = all.querySelectorAll('.svc-seg');
+  const btn = document.getElementById('svcExpand');
+
+  // Abre o accordion quando o link do rodapé (#todos-servicos) é usado
+  function openFromHash() {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (target === all || (target && all.contains(target))) {
+      all.open = true;
+      if (target.classList.contains('svc-seg')) target.open = true;
+      setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+  }
+  openFromHash();
+  window.addEventListener('hashchange', openFromHash);
+
+  if (btn) {
+    const sync = () => {
+      const allOpen = [...segs].every(d => d.open);
+      btn.textContent = allOpen ? 'Fechar todas as seções' : 'Abrir todas as seções';
+      btn.setAttribute('aria-pressed', allOpen ? 'true' : 'false');
+    };
+    btn.addEventListener('click', () => {
+      const allOpen = [...segs].every(d => d.open);
+      segs.forEach(d => { d.open = !allOpen; });
+      sync();
+    });
+    segs.forEach(d => d.addEventListener('toggle', sync));
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await includePartials();
   initHeaderFooter();
@@ -168,4 +203,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCarousel();
   initQuoteForm();
   initLightbox();
+  initAllServices();
 });
