@@ -24,7 +24,8 @@ export function initAuth() {
     }
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CONFIG.GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
+      // drive.file: backup no Drive. calendar.events: criar/editar/apagar eventos na Agenda.
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.events',
       callback: (resp) => {
         if (resp.error) {
           onStatusChange('erro', resp.error);
@@ -45,6 +46,11 @@ export function signIn() {
 
 export function isSignedIn() {
   return !!accessToken;
+}
+
+// Usado pelo módulo do Google Agenda (mesmo login do backup).
+export function getAccessToken() {
+  return accessToken;
 }
 
 async function findBackupFileId() {

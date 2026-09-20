@@ -16,6 +16,7 @@ import { renderUnidades } from './pages/unidades.js';
 import { renderColaboradores } from './pages/colaboradores.js';
 import { renderOS } from './pages/os.js';
 import { renderCompras } from './pages/compras.js';
+import { renderAgenda } from './pages/agenda.js';
 import { renderSegmentos } from './pages/segmentos.js';
 import { renderCategoriasFinanceiro } from './pages/categorias_financeiro.js';
 import { renderFinanceiro } from './pages/financeiro.js';
@@ -165,6 +166,7 @@ async function iniciarApp() {
     clientes: renderClientes,
     fornecedores: renderFornecedores,
     produtos: renderProdutos,
+    agenda: renderAgenda,
     compras: renderCompras,
     os: renderOS,
     financeiro: renderFinanceiro,
@@ -191,6 +193,7 @@ async function iniciarApp() {
       <button data-tab="produtos">Produtos</button>
       <button data-tab="compras">Compras</button>
       <button data-tab="os">OS</button>
+      <button data-tab="agenda">Agenda</button>
       <button data-tab="financeiro">Financeiro</button>
       <button data-tab="categorias">Categoria de Produtos</button>
       <button data-tab="segmentos">Segmentos</button>

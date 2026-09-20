@@ -489,7 +489,11 @@ h4 {
 
   .grid-os-topo      { grid-template-columns: 1fr 1fr; }
   .grid-os-contato,
-  .grid-compra-endereco { grid-template-columns: 2fr 1fr; }
+  .grid-compra-endereco,
+  .grid-agenda-endereco { grid-template-columns: 2fr 1fr; }
+  .grid-agenda-topo  { grid-template-columns: 1fr 1fr; }
+  .grid-agenda-valores,
+  .grid-agenda-rep   { grid-template-columns: repeat(3, 1fr); }
   .grid-os-valores   { grid-template-columns: 2fr 1fr; }   /* descrição bem mais larga que valores */
   .grid-os-pagamento { grid-template-columns: repeat(3, 1fr); }
   .grid-compra-topo  { grid-template-columns: 1fr 2fr 1fr; }
@@ -498,6 +502,7 @@ h4 {
 }
 @media (min-width: 1024px) {
   .grid-os-topo     { grid-template-columns: 1fr 2fr 1fr 1fr; }
+  .grid-agenda-topo { grid-template-columns: 1fr 2fr 1fr 1fr; }
   .grid-item-compra { grid-template-columns: repeat(4, 1fr); }
 }
 
@@ -636,3 +641,19 @@ h4 {
   font-size: 0.7rem;
   font-weight: bold;
 }
+
+/* ---------- Agenda ---------- */
+.agenda-item.atrasado strong { color: var(--danger); }
+.agenda-item.concluido { opacity: 0.6; }
+.etiqueta-tipo {
+  display: inline-block;
+  padding: 0 6px;
+  margin-right: 4px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #ffffff;
+  background: var(--accent);
+}
+.etiqueta-tipo.tipo-pagar { background: #b3261e; }
+.etiqueta-tipo.tipo-receber { background: #2e7d32; }

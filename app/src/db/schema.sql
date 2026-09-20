@@ -239,6 +239,40 @@ CREATE TABLE IF NOT EXISTS compra_itens (
 );
 
 -- ============================================================
+-- Agenda (compromissos, contas a pagar e a receber)
+-- ============================================================
+-- Cada linha é UMA ocorrência. Lançamentos com repetição (diária, semanal,
+-- mensal) viram várias linhas ligadas por serie_id. Cada ocorrência tem o
+-- próprio evento no Google Agenda (google_event_id) e, no caso de contas,
+-- a própria saída/entrada no Financeiro quando é marcada como paga/recebida.
+
+CREATE TABLE IF NOT EXISTS agenda (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  tipo               TEXT NOT NULL DEFAULT 'Compromisso',  -- Compromisso / A pagar / A receber
+  nome               TEXT,                                 -- cliente (ou fornecedor, em A pagar)
+  cliente_id         INTEGER REFERENCES clientes(id),
+  fornecedor_id      INTEGER REFERENCES fornecedores(id),
+  endereco           TEXT,
+  os_id              INTEGER REFERENCES os(id),
+  descricao          TEXT,                                 -- serviço/orçamento a executar (ou descrição da conta)
+  data               TEXT NOT NULL,                        -- AAAA-MM-DD
+  hora               TEXT,                                 -- HH:MM (vazio = dia inteiro)
+  duracao_min        INTEGER DEFAULT 60,
+  valor              REAL,
+  categoria_id       INTEGER REFERENCES categorias_financeiro(id),
+  conta_caixa_id     INTEGER REFERENCES contas_caixa(id),
+  concluido          INTEGER DEFAULT 0,                    -- concluído / pago / recebido
+  repeticao          TEXT DEFAULT 'Nenhuma',               -- Nenhuma / Diária / Semanal / Mensal
+  serie_id           INTEGER,                              -- id da 1ª ocorrência da série
+  ocorrencia         INTEGER,
+  total_ocorrencias  INTEGER,
+  sincronizar_google INTEGER DEFAULT 0,
+  google_event_id    TEXT,
+  financeiro_id      INTEGER REFERENCES financeiro(id),
+  observacao         TEXT
+);
+
+-- ============================================================
 -- Módulo Veículos
 -- ============================================================
 

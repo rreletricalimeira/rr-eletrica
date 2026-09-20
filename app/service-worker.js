@@ -29,6 +29,8 @@ const CORE_ASSETS = [
   './src/pages/colaboradores.js',
   './src/pages/os.js',
   './src/pages/compras.js',
+  './src/pages/agenda.js',
+  './src/db/google_calendar.js',
   './src/pages/segmentos.js',
   './src/pages/categorias_financeiro.js',
   './src/pages/financeiro.js',
