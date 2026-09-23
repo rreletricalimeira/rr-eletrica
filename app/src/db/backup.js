@@ -32,6 +32,7 @@ export function initAuth() {
           return;
         }
         accessToken = resp.access_token;
+        localStorage.setItem(JA_CONECTOU_KEY, '1');
         onStatusChange('conectado');
       },
     });
@@ -39,9 +40,26 @@ export function initAuth() {
   });
 }
 
+const JA_CONECTOU_KEY = 'rr-eletrica-google-ja-conectou';
+
 export function signIn() {
   if (!tokenClient) throw new Error('initAuth() precisa ser chamado antes.');
   tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+}
+
+// Login automático ao abrir o app — só tenta se o usuário já conectou
+// alguma vez antes (senão o Google exige toque no botão para o consentimento
+// inicial). Mesmo assim, sem um clique do usuário, o navegador pode bloquear
+// o popup do Google; nesse caso a tentativa simplesmente falha em silêncio
+// e o botão "Conectar ao Google" continua disponível como alternativa.
+export function trySilentSignIn() {
+  if (!tokenClient || accessToken) return;
+  if (localStorage.getItem(JA_CONECTOU_KEY) !== '1') return;
+  try {
+    tokenClient.requestAccessToken({ prompt: '' });
+  } catch (e) {
+    // Ignorado de propósito: login automático é best-effort.
+  }
 }
 
 export function isSignedIn() {
