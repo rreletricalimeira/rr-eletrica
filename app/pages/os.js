@@ -766,7 +766,7 @@ export function renderOS(container) {
         WHERE si.servico_id = ?
       `, [s.id]);
       const subtotalProdutos = itens.reduce((acc, it) => acc + (it.valor_venda_total || 0), 0);
-      return { s, itens, subtotal: (s.valor_servico || 0) + subtotalProdutos };
+      return { s, itens, subtotalProdutos, subtotal: (s.valor_servico || 0) + subtotalProdutos };
     });
 
     const estiloCabecalhoTabela = { fillColor: COR_ESCURO, textColor: COR_OURO, fontStyle: 'bold' };
@@ -802,18 +802,28 @@ export function renderOS(container) {
         y += 6;
 
         if (d.itens.length) {
+          const linhaTotalMaterial = d.itens.length; // índice (0-based) da última linha do body = total de materiais
           doc.autoTable({
             startY: y,
             head: [['Descrição', 'Qtd', 'Valor unit.', 'Valor total']],
-            body: d.itens.map((it) => [
-              it.descricao || '-',
-              String(it.quantidade),
-              formatarMoeda(it.valor_venda_unit),
-              formatarMoeda(it.valor_venda_total),
-            ]),
+            body: [
+              ...d.itens.map((it) => [
+                it.descricao || '-',
+                String(it.quantidade),
+                formatarMoeda(it.valor_venda_unit),
+                formatarMoeda(it.valor_venda_total),
+              ]),
+              ['Total de materiais', '', '', formatarMoeda(d.subtotalProdutos)],
+            ],
             theme: 'grid',
             styles: { textColor: [0, 0, 0], lineColor: COR_LINHA, lineWidth: 0.2 },
-            didParseCell: alinharCabecalhoDireita,
+            didParseCell: (dados) => {
+              alinharCabecalhoDireita(dados);
+              if (dados.section === 'body' && dados.row.index === linhaTotalMaterial) {
+                dados.cell.styles.fontStyle = 'bold';
+                if (dados.column.index === 3) dados.cell.styles.halign = 'right';
+              }
+            },
             headStyles: estiloCabecalhoTabela,
             columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
             margin: { left: MARGEM, right: MARGEM, bottom: 24 },
@@ -821,8 +831,11 @@ export function renderOS(container) {
           y = doc.lastAutoTable.finalY + 4;
         }
 
+        // Linha só com o valor do serviço (mão de obra), sem colunas de Qtd/Valor unit,
+        // alinhada com a coluna "Valor total" da tabela de materiais acima.
         doc.setFont(undefined, 'bold');
-        doc.text(`Subtotal do serviço: ${formatarMoeda(d.subtotal)}`, xDireita, y, { align: 'right' });
+        doc.text('Valor do serviço:', MARGEM, y);
+        doc.text(formatarMoeda(d.s.valor_servico), xDireita, y, { align: 'right' });
         doc.setFont(undefined, 'normal');
         y += 9;
       });
