@@ -7,7 +7,7 @@ import { all, run, persist } from '../db/db.js';
 // no banco compartilhado (tabela `laudos`, ver schema.sql).
 // ============================================================
 
-const PAINEL_ITEMS = [
+export const PAINEL_ITEMS = [
   ['identificacao_circuitos', 'Identificação/etiquetagem dos circuitos'],
   ['disjuntores', 'Disjuntores dimensionados corretamente'],
   ['dr30ma', 'Presença e funcionamento de DR 30mA'],
@@ -19,7 +19,7 @@ const PAINEL_ITEMS = [
   ['aquecimento', 'Ausência de aquecimento anormal (termografia visual)'],
 ];
 
-const BOMBA_ITEMS = [
+export const BOMBA_ITEMS = [
   ['placa', 'Placa de identificação legível (potência, corrente nominal)'],
   ['ruido', 'Ruído e vibração dentro do normal'],
   ['temp_carcaca', 'Temperatura de carcaça dentro do normal'],
@@ -29,15 +29,15 @@ const BOMBA_ITEMS = [
   ['aterramento_motor', 'Aterramento da carcaça do motor'],
 ];
 
-const INVERSOR_ITEM_TRIGGER = ['inversor_instalado', 'Inversor já instalado no sistema'];
-const INVERSOR_ITEMS_DEMAIS = [
+export const INVERSOR_ITEM_TRIGGER = ['inversor_instalado', 'Inversor já instalado no sistema'];
+export const INVERSOR_ITEMS_DEMAIS = [
   ['parametrizacao', 'Parametrização atual adequada à aplicação'],
   ['ventilacao_inversor', 'Ventilação/dissipação do inversor adequada'],
   ['compatibilidade', 'Compatibilidade do motor com acionamento por inversor'],
   ['oportunidade_inversor', 'Oportunidade identificada para instalação de inversor'],
 ];
 
-const AMBIENTE_ITEMS = [
+export const AMBIENTE_ITEMS = [
   ['ventilacao_ambiente', 'Ventilação adequada da casa de máquinas'],
   ['umidade', 'Ausência de umidade excessiva/infiltração'],
   ['zonas_protecao', 'Respeito às zonas de proteção (volumes 0/1/2 - NBR 10339)'],
@@ -46,7 +46,22 @@ const AMBIENTE_ITEMS = [
   ['extintor', 'Extintor de incêndio presente e válido'],
 ];
 
-function novaBomba(n) { return { nome: `Bomba/Motor ${n}`, itens: {}, inversor: {} }; }
+// Próximo número automático do laudo, no formato LC0001 (4 dígitos).
+function gerarProximoNumeroLaudo() {
+  const registros = all(`SELECT numero FROM laudos WHERE numero LIKE 'LC%'`);
+  let maior = 0;
+  registros.forEach((r) => {
+    const m = /^LC(\d{4,})$/.exec((r.numero || '').trim());
+    if (m) maior = Math.max(maior, Number(m[1]));
+  });
+  return `LC${String(maior + 1).padStart(4, '0')}`;
+}
+
+function novaBomba(n) {
+  return { nome: `Bomba/Motor ${n}`, itens: {}, inversor: {}, tensaoMotor: '', correnteNominal: '', correnteMedida: '' };
+}
+
+const OPCOES_TENSAO_MOTOR = ['220V Trifásico', '220V Bifásico/Monofásico', '110V Monofásico'];
 function novaNaoConformidade() { return { descricao: '', norma: '', risco: 'Baixo', recomendacao: '' }; }
 function novaFoto() { return { dataUrl: null, legenda: '' }; }
 
@@ -112,7 +127,7 @@ export function renderLaudos(container) {
         <h3>${id ? `Laudo ${laudo.numero ? `${laudo.numero} ` : ''}#${id}` : 'Novo laudo'}</h3>
 
         <label>Nº do Laudo</label>
-        <input id="f-numero" type="text" value="${val(laudo.numero)}" />
+        <input id="f-numero" type="text" value="${val(id ? laudo.numero : gerarProximoNumeroLaudo())}" readonly />
 
         <label>Cliente *</label>
         <select id="f-cliente">
@@ -294,6 +309,21 @@ export function renderLaudos(container) {
             ${dados.bombas.length > 1 ? '<button type="button" class="danger btn-remover-bomba" style="margin:0">Remover</button>' : ''}
           </div>
           <h4 class="campo-full">Motor e bomba</h4>
+          <div class="campo">
+            <label>Tensão do motor</label>
+            <select class="bomba-tensao">
+              <option value="">Selecione...</option>
+              ${OPCOES_TENSAO_MOTOR.map((op) => `<option value="${op}" ${b.tensaoMotor === op ? 'selected' : ''}>${op}</option>`).join('')}
+            </select>
+          </div>
+          <div class="campo">
+            <label>Corrente nominal do motor (A)</label>
+            <input type="number" step="0.01" class="bomba-corrente-nominal" value="${val(b.correnteNominal)}" />
+          </div>
+          <div class="campo">
+            <label>Corrente medida (A)</label>
+            <input type="number" step="0.01" class="bomba-corrente-medida" value="${val(b.correnteMedida)}" />
+          </div>
           ${renderChecklist(BOMBA_ITEMS, b.itens, `bomba-${i}`)}
           <h4 class="campo-full">Inversor de frequência</h4>
           ${renderInversorItens(b, i)}
@@ -303,6 +333,9 @@ export function renderLaudos(container) {
       wrap.querySelectorAll('.subcard').forEach((sub) => {
         const idx = Number(sub.dataset.idx);
         sub.querySelector('.bomba-nome').addEventListener('input', (e) => { dados.bombas[idx].nome = e.target.value; });
+        sub.querySelector('.bomba-tensao').addEventListener('change', (e) => { dados.bombas[idx].tensaoMotor = e.target.value; });
+        sub.querySelector('.bomba-corrente-nominal').addEventListener('input', (e) => { dados.bombas[idx].correnteNominal = e.target.value; });
+        sub.querySelector('.bomba-corrente-medida').addEventListener('input', (e) => { dados.bombas[idx].correnteMedida = e.target.value; });
         sub.querySelectorAll('.js-status').forEach((sel) => {
           sel.addEventListener('change', (e) => {
             const item = e.target.dataset.item;
@@ -550,7 +583,7 @@ export function renderLaudos(container) {
 
 // ---------- Helpers ----------
 
-function renderChecklist(items, valoresObj, dataGrupo) {
+export function renderChecklist(items, valoresObj, dataGrupo) {
   return items.map(([id, label]) => `
     <label>${label}</label>
     <select data-grupo="${dataGrupo}" data-item="${id}" class="js-status">
