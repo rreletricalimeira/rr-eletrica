@@ -281,8 +281,11 @@ h4 {
   display: block;
 }
 
-.linha-dupla { display: flex; gap: 10px; }
+.linha-dupla { display: flex; gap: 10px; align-items: center; }
 .linha-dupla > div { flex: 1; }
+/* Alinha o botão "Adicionar" com a altura do campo ao lado —
+   sem isso o margin-top padrão do button empurra ele alguns px pra baixo */
+.linha-dupla button { margin-top: 0; margin-bottom: 0; height: var(--campo-altura); }
 .campo-uf { max-width: 80px; }
 .campo-uf input { max-width: 80px; }
 
@@ -425,6 +428,49 @@ h4 {
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* Overlay de tela cheia (ex.: Checklist Técnico Completo aberto por cima
+   do Roteiro de Visita Técnica) — mesmo fundo escurecido, mas o painel
+   ocupa quase a tela toda e rola por dentro. */
+.overlay-tela-cheia {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.painel-tela-cheia {
+  position: relative;
+  background: var(--bg, #eef1f4);
+  border-radius: 3px;
+  max-width: 720px;
+  width: 100%;
+  height: fit-content;
+  min-height: calc(100% - 0px);
+  padding: 14px 14px 24px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.painel-tela-cheia-topo {
+  position: sticky;
+  top: -14px;
+  margin: -14px -14px 12px;
+  padding: 10px 14px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 1;
+}
+
+.painel-tela-cheia-topo h3 { margin: 0; }
+.painel-tela-cheia-topo button { margin: 0; }
 
 .painel-exportar-botoes button {
   flex: 1;
