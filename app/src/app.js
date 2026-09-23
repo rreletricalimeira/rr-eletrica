@@ -1,6 +1,6 @@
 import { initDb } from './db/db.js';
 import {
-  initAuth, signIn, isSignedIn, backupNow, restoreFromDrive,
+  initAuth, signIn, isSignedIn, backupNow, restoreFromDrive, trySilentSignIn,
   getLastBackupTime, setStatusListener, enableAutoBackup, NotConnectedError,
 } from './db/backup.js';
 import { hasPinConfigured, isUnlockedThisSession, renderLockScreen } from './auth-pin.js';
@@ -27,6 +27,9 @@ import { renderManutencaoVeiculo } from './pages/manutencao_veiculo.js';
 
 // ---------- Páginas do Técnico ----------
 import { renderLaudos } from './pages-tecnico/laudos.js';
+import { renderLaudoAterramento } from './pages-tecnico/laudo_aterramento.js';
+import { renderPropostaTecnica } from './pages-tecnico/proposta_tecnica.js';
+import { renderManuais } from './pages-tecnico/manuais.js';
 import { renderVisitas } from './pages-tecnico/visitas.js';
 import { renderDocumentos } from './pages-tecnico/documentos.js';
 
@@ -111,6 +114,7 @@ async function iniciarApp() {
   statusLine.textContent = 'Banco local pronto.';
 
   await initAuth().catch((e) => { statusLine.textContent = e.message; });
+  trySilentSignIn(); // login automático no Drive/Agenda, se já conectou antes
   enableAutoBackup();
 
   // ---------- 3. Roteador de topo: tela inicial / ERP / Técnico ----------
@@ -230,7 +234,10 @@ async function iniciarApp() {
 
   const paginasTecnico = {
     laudos: renderLaudos,
+    aterramento: renderLaudoAterramento,
+    proposta: renderPropostaTecnica,
     visitas: renderVisitas,
+    manuais: renderManuais,
     documentos: renderDocumentos,
   };
 
@@ -241,7 +248,10 @@ async function iniciarApp() {
     navTabs.innerHTML = `
       <button data-tab="voltar" class="nav-voltar">← Início</button>
       <button data-tab="laudos">Laudos</button>
+      <button data-tab="aterramento">Aterramento</button>
+      <button data-tab="proposta">Proposta</button>
       <button data-tab="visitas">Visitas</button>
+      <button data-tab="manuais">Manuais</button>
       <button data-tab="documentos">Documentos</button>
     `;
     ativarAba(abaAtual);
