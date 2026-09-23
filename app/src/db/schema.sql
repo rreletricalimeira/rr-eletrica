@@ -338,3 +338,104 @@ CREATE TABLE IF NOT EXISTS laudos (
   data_criacao                    TEXT DEFAULT (datetime('now'))
 );
 
+-- ============================================================
+-- Módulo Técnico / Laudo de Aterramento
+-- ============================================================
+CREATE TABLE IF NOT EXISTS laudos_aterramento (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco                        TEXT,
+  telefone                        TEXT,
+  celular                         TEXT,
+  data_medicao                    TEXT,
+  responsavel_tecnico             TEXT,
+  quantidade_hastes               INTEGER DEFAULT 1,
+  voltagem_fase_neutro            REAL,
+  voltagem_fase_terra_sem_carga   REAL,
+  voltagem_fase_terra_com_carga   REAL,
+  amperagem_com_carga             REAL,
+  resistencia_aterramento         REAL,   -- calculado: voltagem_fase_terra_com_carga / amperagem_com_carga
+  observacao                      TEXT,
+  status                          TEXT DEFAULT 'Rascunho',  -- Rascunho / Concluído
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);
+
+-- ============================================================
+-- Módulo Técnico / Roteiro de Visita Técnica
+-- ============================================================
+-- Mesma lógica de dados_json dos laudos: o roteiro tem 7 seções de
+-- checklist de conduta profissional (preparação, abertura, segurança,
+-- execução, comunicação, fechamento, pós-visita) com quantidade fixa
+-- de itens cada, mais o Checklist Técnico Completo embutido (ponto 4),
+-- que é aberto/editado em overlay a partir daqui (ver checklist_tecnico.js).
+CREATE TABLE IF NOT EXISTS roteiros_visita (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco                        TEXT,
+  data_visita                     TEXT,
+  dados_json                      TEXT,   -- 7 seções do roteiro + checklistTecnico
+  observacoes                     TEXT,
+  status                          TEXT DEFAULT 'Rascunho',  -- Rascunho / Concluído
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);
+
+-- ============================================================
+-- Módulo Técnico / Proposta Técnica Comercial
+-- ============================================================
+-- As 3 tabelas repetíveis (serviços propostos, materiais/produtos
+-- inclusos, produtos que a empresa deve adquirir) ficam em JSON, no
+-- mesmo padrão do dados_json dos laudos. `materiais_json` guarda
+-- produto_id de verdade (tabela produtos), porque ao converter em O.S.
+-- (os_id) esses materiais viram os_servico_itens de verdade, com
+-- desconto de estoque — já `produtos_adquirir_json` é só uma lista de
+-- compras (descrição + quantidade) e nunca entra na O.S.
+CREATE TABLE IF NOT EXISTS propostas_tecnicas (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero                          TEXT,
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco_local                  TEXT,
+  data_emissao                    TEXT,
+  validade_proposta               TEXT,
+  responsavel_tecnico             TEXT,
+  diagnostico_resumo              TEXT,
+  servicos_json                   TEXT,   -- [{descricao, qtd, valorUnit}]
+  materiais_json                  TEXT,   -- [{produtoId, descricao, qtd, valorUnit}]
+  produtos_adquirir_json          TEXT,   -- [{descricao, quantidade}]
+  desconto                        REAL DEFAULT 0,
+  condicao_pagamento              TEXT,
+  detalhamento_pagamento          TEXT,
+  prazo_execucao                  TEXT,
+  garantia_servicos               TEXT,
+  garantia_materiais              TEXT,
+  oportunidades                   TEXT,
+  status                          TEXT DEFAULT 'Rascunho',  -- Rascunho / Enviada / Aceita / Convertida em O.S. / Recusada
+  os_id                           INTEGER REFERENCES os(id),
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);
+
+-- ============================================================
+-- Módulo Técnico / Manuais
+-- ============================================================
+-- Os arquivos em si NUNCA ficam salvos no banco — Robinson escolhe a
+-- pasta no celular toda vez que abre a página (decisão dele: acesso
+-- persistente a pasta não é confiável em PWA no Android). Só a
+-- classificação (Segmento/Categoria) de cada nome de arquivo fica
+-- salva aqui, pra reaplicar automaticamente da próxima vez que ele
+-- escolher a mesma pasta.
+CREATE TABLE IF NOT EXISTS manuais_categorias (
+  id                               INTEGER PRIMARY KEY AUTOINCREMENT,
+  segmento_id                      INTEGER REFERENCES segmentos(id),
+  categoria                        TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS manuais_metadata (
+  id                               INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome_arquivo                     TEXT NOT NULL UNIQUE,
+  segmento_id                      INTEGER REFERENCES segmentos(id),
+  categoria_id                     INTEGER REFERENCES manuais_categorias(id),
+  data_criacao                     TEXT DEFAULT (datetime('now'))
+);
+
+
+
+
