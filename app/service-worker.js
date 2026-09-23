@@ -3,7 +3,7 @@
 // IMPORTANTE: o número da versão do cache muda a cada atualização de
 // código para forçar o navegador a buscar os arquivos novos.
 
-const CACHE_NAME = 'rr-eletrica-v8';
+const CACHE_NAME = 'rr-eletrica-v9';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -39,8 +39,13 @@ const CORE_ASSETS = [
   './src/pages/veiculos.js',
   './src/pages/manutencao_veiculo.js',
   './src/pages-tecnico/laudos.js',
+  './src/pages-tecnico/laudo_aterramento.js',
+  './src/pages-tecnico/proposta_tecnica.js',
+  './src/pages-tecnico/checklist_tecnico.js',
+  './src/pages-tecnico/manuais.js',
   './src/pages-tecnico/visitas.js',
   './src/pages-tecnico/documentos.js',
+  './src/ui/pdf_papel_timbrado.js',
   'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
