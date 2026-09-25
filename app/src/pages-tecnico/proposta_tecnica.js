@@ -2,6 +2,7 @@ import { all, run, persist } from '../db/db.js';
 import {
   carregarLogoBase64, desenharCabecalho, desenharRodape, MARGEM, COR_LINHA,
 } from '../ui/pdf_papel_timbrado.js';
+import { entregarPdf } from '../ui/pdf_compartilhar.js';
 
 // ============================================================
 // Proposta Técnica Comercial — baseada no modelo em PDF fornecido
@@ -90,7 +91,10 @@ export function renderPropostaTecnica(container) {
   function renderForm(id = null) {
     const proposta = id ? all('SELECT * FROM propostas_tecnicas WHERE id = ?', [id])[0] : {};
     const dados = {
-      servicos: (id && proposta.servicos_json) ? JSON.parse(proposta.servicos_json) : dadosPadrao().servicos,
+      // Serviços têm só Descrição + Valor: propostas antigas (com Qtd e Valor
+      // unit.) são convertidas para um único valor = qtd × valor unit.
+      servicos: ((id && proposta.servicos_json) ? JSON.parse(proposta.servicos_json) : dadosPadrao().servicos)
+        .map((sv) => ({ descricao: sv.descricao || '', qtd: 1, valorUnit: (Number(sv.qtd) || 0) * (Number(sv.valorUnit) || 0) })),
       materiais: (id && proposta.materiais_json) ? JSON.parse(proposta.materiais_json) : [],
       produtosAdquirir: (id && proposta.produtos_adquirir_json) ? JSON.parse(proposta.produtos_adquirir_json) : [],
     };
@@ -191,9 +195,9 @@ export function renderPropostaTecnica(container) {
         <label>Prazo estimado de execução</label>
         <input id="f-prazo" type="text" value="${val(proposta.prazo_execucao)}" />
         <label>Garantia dos serviços prestados</label>
-        <input id="f-garantia-servicos" type="text" value="${val(proposta.garantia_servicos)}" />
-        <label>Garantia dos materiais (conforme fabricante)</label>
-        <input id="f-garantia-materiais" type="text" value="${val(proposta.garantia_materiais)}" />
+        <input id="f-garantia-servicos" type="text" value="${val(proposta.garantia_servicos ?? '90 dias')}" />
+        <label>Garantia dos materiais</label>
+        <input id="f-garantia-materiais" type="text" value="${val(proposta.garantia_materiais ?? 'Conforme fabricante')}" />
 
         <label class="campo-full">Oportunidades adicionais identificadas (ex.: inversor de frequência)</label>
         <textarea id="f-oportunidades" class="campo-full">${val(proposta.oportunidades)}</textarea>
@@ -224,45 +228,34 @@ export function renderPropostaTecnica(container) {
       formWrap.querySelector('#lista-normas').style.display = mostrarNormas ? 'block' : 'none';
     });
 
-    // ---- Tabela: Serviços ----
+    // ---- Tabela: Serviços (só Descrição + Valor) ----
     function renderServicos() {
       const wrap = formWrap.querySelector('#lista-servicos');
       wrap.innerHTML = dados.servicos.map((s, i) => `
-        <div class="subcard" data-idx="${i}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:8px">
-          <div style="flex:2; min-width:180px">
-            <label>Descrição do serviço</label>
+        <div class="subcard linha-item" data-idx="${i}">
+          <div class="li-desc">
+            <label>Descrição</label>
             <input type="text" class="sv-descricao" value="${val(s.descricao)}" ${jaConvertida ? 'readonly' : ''} />
           </div>
-          <div style="width:80px">
-            <label>Qtd</label>
-            <input type="number" step="0.01" class="sv-qtd" value="${val(s.qtd)}" ${jaConvertida ? 'readonly' : ''} />
+          <div class="li-valor">
+            <label>Valor (R$)</label>
+            <input type="number" step="0.01" min="0" class="sv-valor" value="${val(s.valorUnit || '')}" ${jaConvertida ? 'readonly' : ''} />
           </div>
-          <div style="width:120px">
-            <label>Valor unit. (R$)</label>
-            <input type="number" step="0.01" class="sv-valor-unit" value="${val(s.valorUnit)}" ${jaConvertida ? 'readonly' : ''} />
-          </div>
-          <div style="width:120px">
-            <label>Valor total (R$)</label>
-            <input type="text" class="sv-valor-total" value="${formatarMoeda((s.qtd || 0) * (s.valorUnit || 0))}" readonly />
-          </div>
-          ${(!jaConvertida && dados.servicos.length > 1) ? '<button type="button" class="danger btn-remover-servico">Remover</button>' : ''}
+          ${(!jaConvertida && dados.servicos.length > 1) ? '<div class="li-remover"><button type="button" class="danger btn-remover-linha btn-remover-servico">Remover</button></div>' : ''}
         </div>
       `).join('') || '<p class="item-sub"><em>Nenhum serviço adicionado</em></p>';
 
       wrap.querySelectorAll('.subcard').forEach((sub) => {
         const idx = Number(sub.dataset.idx);
         sub.querySelector('.sv-descricao').addEventListener('input', (e) => { dados.servicos[idx].descricao = e.target.value; });
-        sub.querySelector('.sv-qtd').addEventListener('input', (e) => { dados.servicos[idx].qtd = Number(e.target.value) || 0; atualizarLinhaServico(idx); recalcularTotais(); });
-        sub.querySelector('.sv-valor-unit').addEventListener('input', (e) => { dados.servicos[idx].valorUnit = Number(e.target.value) || 0; atualizarLinhaServico(idx); recalcularTotais(); });
+        sub.querySelector('.sv-valor').addEventListener('input', (e) => {
+          dados.servicos[idx].qtd = 1;
+          dados.servicos[idx].valorUnit = Number(e.target.value) || 0;
+          recalcularTotais();
+        });
         const btnRem = sub.querySelector('.btn-remover-servico');
         if (btnRem) btnRem.addEventListener('click', () => { dados.servicos.splice(idx, 1); renderServicos(); recalcularTotais(); });
       });
-    }
-    function atualizarLinhaServico(idx) {
-      const sub = formWrap.querySelector(`#lista-servicos .subcard[data-idx="${idx}"]`);
-      if (!sub) return;
-      const s = dados.servicos[idx];
-      sub.querySelector('.sv-valor-total').value = formatarMoeda((s.qtd || 0) * (s.valorUnit || 0));
     }
     const btnAddServico = formWrap.querySelector('#btn-add-servico');
     if (btnAddServico) btnAddServico.addEventListener('click', () => { dados.servicos.push({ descricao: '', qtd: 1, valorUnit: 0 }); renderServicos(); recalcularTotais(); });
@@ -272,27 +265,27 @@ export function renderPropostaTecnica(container) {
     function renderMateriais() {
       const wrap = formWrap.querySelector('#lista-materiais');
       wrap.innerHTML = dados.materiais.map((m, i) => `
-        <div class="subcard" data-idx="${i}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:8px">
-          <div style="flex:2; min-width:180px">
+        <div class="subcard linha-item" data-idx="${i}">
+          <div class="li-desc">
             <label>Produto</label>
             <select class="mt-produto" ${jaConvertida ? 'disabled' : ''}>
               <option value="">Selecione um produto</option>
               ${catalogoProdutos.map((p) => `<option value="${p.id}" ${m.produtoId === p.id ? 'selected' : ''}>${escapeHtml(p.descricao)}</option>`).join('')}
             </select>
           </div>
-          <div style="width:80px">
+          <div class="li-qtd">
             <label>Qtd</label>
-            <input type="number" step="0.01" class="mt-qtd" value="${val(m.qtd)}" ${jaConvertida ? 'readonly' : ''} />
+            <input type="number" step="0.01" min="0" class="mt-qtd" value="${val(m.qtd)}" ${jaConvertida ? 'readonly' : ''} />
           </div>
-          <div style="width:120px">
+          <div class="li-valor">
             <label>Valor unit. (R$)</label>
             <input type="number" step="0.01" class="mt-valor-unit" value="${val(m.valorUnit)}" ${jaConvertida ? 'readonly' : ''} />
           </div>
-          <div style="width:120px">
+          <div class="li-valor">
             <label>Valor total (R$)</label>
             <input type="text" class="mt-valor-total" value="${formatarMoeda((m.qtd || 0) * (m.valorUnit || 0))}" readonly />
           </div>
-          ${(!jaConvertida) ? '<button type="button" class="danger btn-remover-material">Remover</button>' : ''}
+          ${(!jaConvertida) ? '<div class="li-remover"><button type="button" class="danger btn-remover-linha btn-remover-material">Remover</button></div>' : ''}
         </div>
       `).join('') || '<p class="item-sub"><em>Nenhum material adicionado</em></p>';
 
@@ -307,7 +300,7 @@ export function renderPropostaTecnica(container) {
           renderMateriais();
           recalcularTotais();
         });
-        sub.querySelector('.mt-qtd').addEventListener('input', (e) => { dados.materiais[idx].qtd = Number(e.target.value) || 0; atualizarLinhaMaterial(idx); recalcularTotais(); });
+        sub.querySelector('.mt-qtd').addEventListener('input', (e) => { dados.materiais[idx].qtd = e.target.value === '' ? '' : (Number(e.target.value) || 0); atualizarLinhaMaterial(idx); recalcularTotais(); });
         sub.querySelector('.mt-valor-unit').addEventListener('input', (e) => { dados.materiais[idx].valorUnit = Number(e.target.value) || 0; atualizarLinhaMaterial(idx); recalcularTotais(); });
         const btnRem = sub.querySelector('.btn-remover-material');
         if (btnRem) btnRem.addEventListener('click', () => { dados.materiais.splice(idx, 1); renderMateriais(); recalcularTotais(); });
@@ -320,33 +313,33 @@ export function renderPropostaTecnica(container) {
       sub.querySelector('.mt-valor-total').value = formatarMoeda((m.qtd || 0) * (m.valorUnit || 0));
     }
     const btnAddMaterial = formWrap.querySelector('#btn-add-material');
-    if (btnAddMaterial) btnAddMaterial.addEventListener('click', () => { dados.materiais.push({ produtoId: null, descricao: '', qtd: 1, valorUnit: 0 }); renderMateriais(); recalcularTotais(); });
+    if (btnAddMaterial) btnAddMaterial.addEventListener('click', () => { dados.materiais.push({ produtoId: null, descricao: '', qtd: '', valorUnit: 0 }); renderMateriais(); recalcularTotais(); });
 
     // ---- Tabela: Produtos que a empresa deve adquirir (só descrição + qtd) ----
     function renderAdquirir() {
       const wrap = formWrap.querySelector('#lista-adquirir');
       wrap.innerHTML = dados.produtosAdquirir.map((p, i) => `
-        <div class="subcard" data-idx="${i}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:8px">
-          <div style="flex:2; min-width:180px">
+        <div class="subcard linha-item" data-idx="${i}">
+          <div class="li-desc">
             <label>Descrição</label>
             <input type="text" class="pa-descricao" value="${val(p.descricao)}" />
           </div>
-          <div style="width:100px">
+          <div class="li-qtd">
             <label>Quantidade</label>
-            <input type="number" step="0.01" class="pa-quantidade" value="${val(p.quantidade)}" />
+            <input type="number" step="0.01" min="0" class="pa-quantidade" value="${val(p.quantidade)}" />
           </div>
-          <button type="button" class="danger btn-remover-adquirir">Remover</button>
+          <div class="li-remover"><button type="button" class="danger btn-remover-linha btn-remover-adquirir">Remover</button></div>
         </div>
       `).join('') || '<p class="item-sub"><em>Nenhum item nesta lista</em></p>';
 
       wrap.querySelectorAll('.subcard').forEach((sub) => {
         const idx = Number(sub.dataset.idx);
         sub.querySelector('.pa-descricao').addEventListener('input', (e) => { dados.produtosAdquirir[idx].descricao = e.target.value; });
-        sub.querySelector('.pa-quantidade').addEventListener('input', (e) => { dados.produtosAdquirir[idx].quantidade = Number(e.target.value) || 0; });
+        sub.querySelector('.pa-quantidade').addEventListener('input', (e) => { dados.produtosAdquirir[idx].quantidade = e.target.value === '' ? '' : (Number(e.target.value) || 0); });
         sub.querySelector('.btn-remover-adquirir').addEventListener('click', () => { dados.produtosAdquirir.splice(idx, 1); renderAdquirir(); });
       });
     }
-    formWrap.querySelector('#btn-add-adquirir').addEventListener('click', () => { dados.produtosAdquirir.push({ descricao: '', quantidade: 1 }); renderAdquirir(); });
+    formWrap.querySelector('#btn-add-adquirir').addEventListener('click', () => { dados.produtosAdquirir.push({ descricao: '', quantidade: '' }); renderAdquirir(); });
 
     // ---- Totais ao vivo ----
     function recalcularTotais() {
@@ -370,7 +363,12 @@ export function renderPropostaTecnica(container) {
 
     // ---- Ações ----
     formWrap.querySelector('#btn-cancelar-proposta').addEventListener('click', () => { formWrap.innerHTML = ''; });
-    formWrap.querySelector('#btn-exportar-proposta').addEventListener('click', () => gerarPdf(id, dados));
+    formWrap.querySelector('#btn-exportar-proposta').addEventListener('click', () => {
+      const registro = coletarRegistro();
+      const opt = formWrap.querySelector('#f-cliente').selectedOptions[0];
+      registro.cliente_nome = registro.cliente_id && opt ? opt.textContent : '';
+      gerarPdf(registro, dados);
+    });
 
     if (id) {
       const btnExcluir = formWrap.querySelector('#btn-excluir-proposta');
@@ -438,6 +436,10 @@ export function renderPropostaTecnica(container) {
         }
         if (!dados.servicos.some((s) => s.descricao) && !dados.materiais.some((m) => m.produtoId)) {
           formWrap.querySelector('#form-erro').textContent = 'Adicione ao menos um serviço ou material antes de converter em O.S.';
+          return;
+        }
+        if (dados.materiais.some((m) => m.produtoId && !(Number(m.qtd) > 0))) {
+          formWrap.querySelector('#form-erro').textContent = 'Informe a quantidade de todos os materiais antes de converter em O.S.';
           return;
         }
         if (!confirm('Converter esta proposta em uma O.S.? Os serviços e materiais informados serão lançados na OS (com baixa de estoque dos materiais com controle de estoque).')) return;
@@ -517,8 +519,7 @@ export function renderPropostaTecnica(container) {
 
 // ---------- Exportação em PDF ----------
 
-async function gerarPdf(id, dados) {
-  const proposta = id ? all('SELECT p.*, c.nome as cliente_nome FROM propostas_tecnicas p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.id = ?', [id])[0] : {};
+async function gerarPdf(proposta, dados) {
   const logo = await carregarLogoBase64();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -549,7 +550,7 @@ async function gerarPdf(id, dados) {
     doc.text(linhas, MARGEM, y); y += linhas.length * 5.5 + 3;
   }
 
-  function tabela(titulo, head, body) {
+  function tabela(titulo, head, body, columnStyles) {
     if (!body.length) return;
     doc.setFont(undefined, 'bold');
     doc.setFontSize(11);
@@ -562,6 +563,7 @@ async function gerarPdf(id, dados) {
       theme: 'grid',
       styles: { textColor: [0, 0, 0], lineColor: COR_LINHA, lineWidth: 0.2, fontSize: 9 },
       headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0] },
+      columnStyles: columnStyles || {},
       margin: { left: MARGEM, right: MARGEM, bottom: 24 },
     });
     y = doc.lastAutoTable.finalY + 6;
@@ -571,14 +573,15 @@ async function gerarPdf(id, dados) {
   const totalServicos = dados.servicos.reduce((acc, s) => acc + (s.qtd || 0) * (s.valorUnit || 0), 0);
   const totalMateriais = dados.materiais.reduce((acc, m) => acc + (m.qtd || 0) * (m.valorUnit || 0), 0);
 
-  tabela('Escopo dos Serviços Propostos', ['Descrição do serviço', 'Qtd', 'Valor unit.', 'Valor total'],
-    dados.servicos.filter((s) => s.descricao).map((s) => [s.descricao, String(s.qtd), formatarMoeda(s.valorUnit), formatarMoeda((s.qtd || 0) * (s.valorUnit || 0))]));
+  tabela('Escopo dos Serviços Propostos', ['Descrição do serviço', 'Valor'],
+    dados.servicos.filter((s) => s.descricao).map((s) => [s.descricao, formatarMoeda((s.qtd || 0) * (s.valorUnit || 0))]),
+    { 1: { cellWidth: 36, halign: 'right' } });
 
   tabela('Materiais e Equipamentos Inclusos', ['Item / Material', 'Qtd', 'Valor unit.', 'Valor total'],
-    dados.materiais.filter((m) => m.descricao).map((m) => [m.descricao, String(m.qtd), formatarMoeda(m.valorUnit), formatarMoeda((m.qtd || 0) * (m.valorUnit || 0))]));
+    dados.materiais.filter((m) => m.descricao).map((m) => [m.descricao, m.qtd === '' || m.qtd == null ? '—' : String(m.qtd), formatarMoeda(m.valorUnit), formatarMoeda((m.qtd || 0) * (m.valorUnit || 0))]));
 
   tabela('Produtos que a empresa deve adquirir', ['Item', 'Quantidade'],
-    dados.produtosAdquirir.filter((p) => p.descricao).map((p) => [p.descricao, String(p.quantidade)]));
+    dados.produtosAdquirir.filter((p) => p.descricao).map((p) => [p.descricao, p.quantidade === '' || p.quantidade == null ? '—' : String(p.quantidade)]));
 
   // Investimento total
   if (y > doc.internal.pageSize.getHeight() - 60) { doc.addPage(); y = MARGEM + 10; }
@@ -615,7 +618,9 @@ async function gerarPdf(id, dados) {
   }
 
   desenharRodape(doc);
-  doc.save(`proposta-${(proposta.numero || id || 'nova')}.pdf`);
+  entregarPdf(doc, `proposta-${proposta.numero || 'nova'}-${(proposta.cliente_nome || 'cliente').replace(/[^a-z0-9]+/gi, '-')}.pdf`, {
+    mensagem: `Proposta Técnica Comercial${proposta.numero ? ` ${proposta.numero}` : ''} — RR Elétrica`,
+  });
 }
 
 function val(v) { return v === undefined || v === null ? '' : String(v).replace(/"/g, '&quot;'); }

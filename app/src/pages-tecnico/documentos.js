@@ -1,16 +1,14 @@
-// PLACEHOLDER — este arquivo ainda não é o módulo real de "Documentos"
-// (upload de PDF/arquivos como Blob, metadados na tabela `documentos`)
-// já construído em uma sessão anterior. Eu não tenho esse código neste
-// ambiente; assim que você colar/enviar o documentos.js real, eu substituo
-// este stub mantendo a mesma assinatura `export function renderDocumentos(container)`.
+import { renderCertificadosGarantia } from './certificado_garantia.js';
+
+// ============================================================
+// Aba "Documentos" do módulo Técnico.
+// Por enquanto reúne o Certificado de Garantia (ver certificado_garantia.js).
+//
+// OBS.: o antigo módulo de upload de arquivos/PDF (Blob na store `arquivos`)
+// não está neste repositório — quando o código dele for integrado, ele entra
+// aqui como uma segunda seção da mesma aba, sem mexer no certificado.
+// ============================================================
 
 export function renderDocumentos(container) {
-  container.innerHTML = `
-    <div class="page">
-      <h2>Documentos</h2>
-      <div class="card">
-        <p class="item-sub">Módulo ainda não integrado nesta reorganização — aguardando o código original.</p>
-      </div>
-    </div>
-  `;
+  renderCertificadosGarantia(container);
 }

@@ -5,6 +5,7 @@ import {
 import {
   carregarLogoBase64, desenharCabecalho, desenharRodape, MARGEM, COR_LINHA,
 } from '../ui/pdf_papel_timbrado.js';
+import { entregarPdf } from '../ui/pdf_compartilhar.js';
 
 // ============================================================
 // Checklist Técnico Completo (quadro elétrico, motores/bombas/
@@ -187,7 +188,9 @@ async function gerarPdf(dados, contexto) {
   tabelaSecao('Ambiente', AMBIENTE_ITEMS, dados.ambiente);
 
   desenharRodape(doc);
-  doc.save(`checklist-tecnico-${(contexto.clienteNome || 'sem-cliente').replace(/[^a-z0-9]/gi, '-')}.pdf`);
+  entregarPdf(doc, `checklist-tecnico-${(contexto.clienteNome || 'sem-cliente').replace(/[^a-z0-9]/gi, '-')}.pdf`, {
+    mensagem: 'Checklist Técnico — RR Elétrica',
+  });
 }
 
 function val(v) { return v === undefined || v === null ? '' : String(v).replace(/"/g, '&quot;'); }

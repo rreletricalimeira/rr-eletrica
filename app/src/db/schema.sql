@@ -343,6 +343,7 @@ CREATE TABLE IF NOT EXISTS laudos (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS laudos_aterramento (
   id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero                          TEXT,   -- automático: LA0001, LA0002...
   cliente_id                      INTEGER REFERENCES clientes(id),
   endereco                        TEXT,
   telefone                        TEXT,
@@ -436,6 +437,38 @@ CREATE TABLE IF NOT EXISTS manuais_metadata (
   data_criacao                     TEXT DEFAULT (datetime('now'))
 );
 
+-- ============================================================
+-- Módulo Técnico / Documentos — Certificado de Garantia
+-- ============================================================
+-- Cliente, endereço, telefone e serviços vêm da O.S. escolhida; ficam
+-- gravados aqui como foto do momento em que o certificado foi emitido
+-- (se a O.S. mudar depois, o certificado já emitido não muda sozinho).
+CREATE TABLE IF NOT EXISTS certificados_garantia (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  os_id                           INTEGER REFERENCES os(id),
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco_servico                TEXT,
+  telefone                        TEXT,
+  data_execucao                   TEXT,
+  servicos_texto                  TEXT,   -- um serviço por linha
+  local_emissao                   TEXT,
+  data_emissao                    TEXT,
+  responsavel_nome                TEXT,
+  assinatura_cliente_base64       TEXT,
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);
 
-
-
+-- ============================================================
+-- Módulo Técnico / Plano Geral de Serviços (rascunho)
+-- ============================================================
+-- Rascunho dos serviços e produtos de um cliente, para montar depois um
+-- orçamento mais exato. itens_json: [{descricao, materiais:[{descricao, qtd}]}]
+CREATE TABLE IF NOT EXISTS planos_servicos (
+  id                              INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id                      INTEGER REFERENCES clientes(id),
+  endereco                        TEXT,
+  telefone                        TEXT,
+  data_plano                      TEXT,
+  itens_json                      TEXT,
+  data_criacao                    TEXT DEFAULT (datetime('now'))
+);

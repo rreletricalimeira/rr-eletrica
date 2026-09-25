@@ -99,6 +99,20 @@ async function migrar() {
             AND categoria NOT IN (SELECT categoria FROM categorias_financeiro)`);
   db.run(`UPDATE financeiro SET categoria_id = (SELECT c.id FROM categorias_financeiro c WHERE c.categoria = financeiro.categoria)
           WHERE categoria_id IS NULL AND categoria IS NOT NULL AND categoria <> ''`);
+
+  // Laudo de Aterramento: número automático LA0001. Laudos que já existiam
+  // sem número recebem a numeração na ordem em que foram criados.
+  const colunasAt = all("PRAGMA table_info(laudos_aterramento)").map((c) => c.name);
+  if (!colunasAt.includes('numero')) db.run('ALTER TABLE laudos_aterramento ADD COLUMN numero TEXT');
+  let maiorAt = 0;
+  all("SELECT numero FROM laudos_aterramento WHERE numero LIKE 'LA%'").forEach((r) => {
+    const m = /^LA(\d{4,})$/.exec((r.numero || '').trim());
+    if (m) maiorAt = Math.max(maiorAt, Number(m[1]));
+  });
+  all("SELECT id FROM laudos_aterramento WHERE numero IS NULL OR numero = '' ORDER BY id").forEach((r) => {
+    maiorAt += 1;
+    db.run('UPDATE laudos_aterramento SET numero = ? WHERE id = ?', [`LA${String(maiorAt).padStart(4, '0')}`, r.id]);
+  });
 }
 
 export async function persist() {

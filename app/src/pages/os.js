@@ -1,5 +1,6 @@
 import { all, run, persist } from '../db/db.js';
 import { obterOuCriarCategoriaFinanceiro } from '../db/lookups.js';
+import { entregarPdf } from '../ui/pdf_compartilhar.js';
 
 export function renderOS(container) {
   container.innerHTML = `
@@ -880,7 +881,10 @@ export function renderOS(container) {
     }
     doc.setTextColor(0, 0, 0);
 
-    doc.save(`${tipoLabel}-${os.id}-${(os.cliente_nome || 'cliente').replace(/\s+/g, '_')}.pdf`);
+    entregarPdf(doc, `${tipoLabel}-${os.id}-${(os.cliente_nome || 'cliente').replace(/\s+/g, '_')}.pdf`, {
+      mensagem: `${tipoLabel} ${os.id} — RR Elétrica`,
+      telefone: os.telefone || os.celular1 || os.fone1,
+    });
   }
 
   container.querySelector('#btn-nova-os').addEventListener('click', () => renderForm());

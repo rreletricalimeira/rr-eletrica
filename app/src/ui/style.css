@@ -703,3 +703,57 @@ h4 {
 }
 .etiqueta-tipo.tipo-pagar { background: #b3261e; }
 .etiqueta-tipo.tipo-receber { background: #2e7d32; }
+
+/* =====================================================================
+   Linhas repetíveis (serviços, materiais, produtos a adquirir, plano geral)
+   Todos os campos e o botão "Remover" ficam alinhados pela base do campo,
+   no PC e no celular. No celular a descrição ocupa a linha toda, Qtd/Valor
+   ficam lado a lado e o "Remover" ocupa a largura inteira, sempre por último.
+   ===================================================================== */
+.linha-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+.linha-item > div { min-width: 0; }
+.linha-item label { margin: 0 0 3px; }
+.linha-item .li-desc  { flex: 3 1 240px; }
+.linha-item .li-qtd   { flex: 0 1 110px; }
+.linha-item .li-valor { flex: 0 1 150px; }
+.linha-item .li-remover { flex: 0 0 auto; }
+.linha-item button.btn-remover-linha {
+  margin: 0;
+  height: var(--campo-altura);
+  padding-top: 0;
+  padding-bottom: 0;
+  white-space: nowrap;
+}
+@media (max-width: 719px) {
+  .linha-item .li-desc   { flex: 1 1 100%; }
+  .linha-item .li-qtd,
+  .linha-item .li-valor  { flex: 1 1 40%; }
+  .linha-item .li-remover { flex: 1 1 100%; }
+  .linha-item button.btn-remover-linha { width: 100%; }
+}
+
+/* Materiais dentro de um serviço (Plano Geral de Serviços) */
+.ps-materiais .linha-item { margin-top: 8px; }
+.ps-materiais:empty { display: none; }
+
+/* Linha com o botão "+ Adicionar ..." dentro de um bloco */
+.linha-acao { display: flex; margin-top: 10px; }
+.linha-acao button { margin: 0; }
+
+/* Painel "PDF pronto" (compartilhar / baixar) */
+.painel-pdf-pronto .painel-pdf-aviso { margin: 14px 0 0; font-size: 0.78rem; }
+.painel-pdf-pronto .painel-pdf-aviso:empty { display: none; }
+.painel-pdf-pronto .painel-exportar-botoes { margin-top: 4px; }
+
+/* Campos preenchidos automaticamente (não editáveis) */
+.app-shell input.auto-preenchido,
+.app-shell textarea.auto-preenchido {
+  background: #dfe3e8;
+  box-shadow: none;
+  cursor: default;
+}

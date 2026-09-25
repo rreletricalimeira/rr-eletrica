@@ -29,6 +29,7 @@ import { renderManutencaoVeiculo } from './pages/manutencao_veiculo.js';
 import { renderLaudos } from './pages-tecnico/laudos.js';
 import { renderLaudoAterramento } from './pages-tecnico/laudo_aterramento.js';
 import { renderPropostaTecnica } from './pages-tecnico/proposta_tecnica.js';
+import { renderPlanoServicos } from './pages-tecnico/plano_servicos.js';
 import { renderManuais } from './pages-tecnico/manuais.js';
 import { renderVisitas } from './pages-tecnico/visitas.js';
 import { renderDocumentos } from './pages-tecnico/documentos.js';
@@ -235,6 +236,7 @@ async function iniciarApp() {
   const paginasTecnico = {
     laudos: renderLaudos,
     aterramento: renderLaudoAterramento,
+    plano: renderPlanoServicos,
     proposta: renderPropostaTecnica,
     visitas: renderVisitas,
     manuais: renderManuais,
@@ -249,6 +251,7 @@ async function iniciarApp() {
       <button data-tab="voltar" class="nav-voltar">← Início</button>
       <button data-tab="laudos">Laudos</button>
       <button data-tab="aterramento">Aterramento</button>
+      <button data-tab="plano">Plano Geral</button>
       <button data-tab="proposta">Proposta</button>
       <button data-tab="visitas">Visitas</button>
       <button data-tab="manuais">Manuais</button>
@@ -286,8 +289,8 @@ async function iniciarApp() {
 
     function atualizarStatusConexao() {
       container.querySelector('#backup-conexao').textContent = isSignedIn()
-        ? 'Conectado ao Google ✔'
-        : '⚠ Não conectado ao Google — backup e restauração não vão funcionar até conectar.';
+        ? '✔ Conectado ao Drive — o backup é salvo no Google Drive.'
+        : '⚠ Não conectado ao Drive — backup e restauração não vão funcionar até conectar.';
       const t = getLastBackupTime();
       container.querySelector('#backup-ultimo').textContent = t
         ? `Último backup: ${new Date(t).toLocaleString('pt-BR')}`
